@@ -10,6 +10,8 @@ import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
+import { register, saveToken } from "../../api/auth"
+import { toast } from "sonner"
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -26,18 +28,28 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (formData.password !== formData.confirmPassword) {
-      alert("两次输入的密码不一致")
+      toast.error("两次输入的密码不一致")
       return
     }
     if (!formData.agreeTerms) {
-      alert("请阅读并同意用户协议")
+      toast.error("请阅读并同意用户协议")
       return
     }
     setIsLoading(true)
-    // 模拟注册过程
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    setIsLoading(false)
-    router.push("/dashboard")
+    try {
+      const response = await register({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password
+      })
+      saveToken(response.token)
+      toast.success("注册成功")
+      router.push("/dashboard")
+    } catch (error: any) {
+      toast.error(error.message || "注册失败，请稍后重试")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const passwordStrength = () => {
