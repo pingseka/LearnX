@@ -10,6 +10,8 @@ import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
+import { login, saveToken } from "../../api/auth"
+import { toast } from "sonner"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -24,10 +26,19 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    // 模拟登录过程
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    setIsLoading(false)
-    router.push("/dashboard")
+    try {
+      const response = await login({
+        email: formData.email,
+        password: formData.password
+      })
+      saveToken(response.token)
+      toast.success("登录成功")
+      router.push("/dashboard")
+    } catch (error: any) {
+      toast.error(error.message || "登录失败，请检查邮箱和密码")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (

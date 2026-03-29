@@ -1,0 +1,927 @@
+openapi: 3.0.0
+info:
+  title: 研料库 API
+  description: 研料库 - 考研资料分享平台后端API接口文档
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@yanliaoku.com
+
+servers:
+  - url: http://localhost:3001/api
+    description: 本地开发服务器
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "张三"
+        email:
+          type: string
+          format: email
+          example: "zhangsan@example.com"
+        role:
+          type: string
+          enum: [user, admin]
+          example: "user"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Material:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: "考研数学复习资料"
+        description:
+          type: string
+          example: "包含高等数学、线性代数、概率论等全套复习资料"
+        price:
+          type: number
+          format: decimal
+          example: 29.99
+        category:
+          type: string
+          example: "数学"
+        fileUrl:
+          type: string
+          example: "/uploads/materials/math_review.pdf"
+        thumbnailUrl:
+          type: string
+          example: "/uploads/thumbnails/math_review.jpg"
+        authorId:
+          type: integer
+          example: 1
+        author:
+          $ref: '#/components/schemas/User'
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tag'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Tag:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "数学"
+
+    Order:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        buyerId:
+          type: integer
+          example: 2
+        buyer:
+          $ref: '#/components/schemas/User'
+        totalAmount:
+          type: number
+          format: decimal
+          example: 59.98
+        status:
+          type: string
+          enum: [pending, completed, cancelled]
+          example: "completed"
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItem'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    OrderItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        orderId:
+          type: integer
+          example: 1
+        materialId:
+          type: integer
+          example: 1
+        material:
+          type: object
+          properties:
+            id:
+              type: integer
+            title:
+              type: string
+            price:
+              type: number
+            fileUrl:
+              type: string
+        quantity:
+          type: integer
+          example: 1
+        price:
+          type: number
+          format: decimal
+          example: 29.99
+
+    EarningsStats:
+      type: object
+      properties:
+        totalEarnings:
+          type: number
+          format: decimal
+          example: 1500.50
+        monthlyEarnings:
+          type: number
+          format: decimal
+          example: 300.00
+        dailyEarnings:
+          type: number
+          format: decimal
+          example: 50.00
+        materialCount:
+          type: integer
+          example: 10
+        saleCount:
+          type: integer
+          example: 50
+        trends:
+          type: array
+          items:
+            type: object
+            properties:
+              date:
+                type: string
+                format: date
+              amount:
+                type: number
+                format: decimal
+
+    EarningsDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        materialId:
+          type: integer
+          example: 1
+        material:
+          type: object
+          properties:
+            id:
+              type: integer
+            title:
+              type: string
+        orderId:
+          type: integer
+          example: 1
+        buyerId:
+          type: integer
+          example: 2
+        buyer:
+          type: object
+          properties:
+            id:
+              type: integer
+            username:
+              type: string
+        amount:
+          type: number
+          format: decimal
+          example: 29.99
+        quantity:
+          type: integer
+          example: 1
+        createdAt:
+          type: string
+          format: date-time
+
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "错误信息"
+        stack:
+          type: string
+          example: "Error: 错误信息\n at..."
+
+paths:
+  # 认证相关API
+  /auth/register:
+    post:
+      summary: 用户注册
+      description: 创建新用户账户
+      tags:
+        - 认证
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - email
+                - password
+              properties:
+                name:
+                  type: string
+                  example: "张三"
+                email:
+                  type: string
+                  format: email
+                  example: "zhangsan@example.com"
+                password:
+                  type: string
+                  format: password
+                  minLength: 6
+                  example: "password123"
+                role:
+                  type: string
+                  enum: [user, admin]
+                  default: user
+      responses:
+        '201':
+          description: 注册成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+                  token:
+                    type: string
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        '400':
+          description: 请求参数错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: 邮箱已被注册
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/login:
+    post:
+      summary: 用户登录
+      description: 使用邮箱和密码登录
+      tags:
+        - 认证
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "zhangsan@example.com"
+                password:
+                  type: string
+                  format: password
+                  example: "password123"
+      responses:
+        '200':
+          description: 登录成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+                  token:
+                    type: string
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        '400':
+          description: 请求参数错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: 邮箱或密码错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/profile:
+    get:
+      summary: 获取个人资料
+      description: 获取当前登录用户的信息
+      tags:
+        - 认证
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: 未授权，需要登录
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # 素材相关API
+  /materials:
+    get:
+      summary: 获取素材列表
+      description: 获取所有素材的列表，支持分页和筛选
+      tags:
+        - 素材
+      parameters:
+        - name: page
+          in: query
+          description: 页码
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          description: 每页数量
+          schema:
+            type: integer
+            default: 10
+        - name: category
+          in: query
+          description: 分类筛选
+          schema:
+            type: string
+        - name: tag
+          in: query
+          description: 标签筛选
+          schema:
+            type: string
+        - name: search
+          in: query
+          description: 搜索关键词
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  materials:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Material'
+                  total:
+                    type: integer
+                    example: 100
+
+    post:
+      summary: 创建素材
+      description: 上传新素材（需要登录）
+      tags:
+        - 素材
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - title
+                - description
+                - price
+                - category
+                - file
+                - thumbnail
+              properties:
+                title:
+                  type: string
+                  example: "考研数学复习资料"
+                description:
+                  type: string
+                  example: "包含高等数学、线性代数、概率论等全套复习资料"
+                price:
+                  type: number
+                  format: decimal
+                  example: 29.99
+                category:
+                  type: string
+                  example: "数学"
+                tags:
+                  type: string
+                  example: '["数学", "考研"]'
+                file:
+                  type: string
+                  format: binary
+                  description: 素材文件
+                thumbnail:
+                  type: string
+                  format: binary
+                  description: 缩略图
+      responses:
+        '201':
+          description: 创建成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Material'
+        '400':
+          description: 请求参数错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: 未授权，需要登录
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /materials/{id}:
+    get:
+      summary: 获取素材详情
+      description: 根据ID获取单个素材的详细信息
+      tags:
+        - 素材
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 素材ID
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Material'
+        '404':
+          description: 素材不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    put:
+      summary: 更新素材
+      description: 更新素材信息（需要登录，仅限作者）
+      tags:
+        - 素材
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 素材ID
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+                price:
+                  type: number
+                  format: decimal
+                category:
+                  type: string
+                tags:
+                  type: string
+                file:
+                  type: string
+                  format: binary
+                thumbnail:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Material'
+        '401':
+          description: 未授权，需要登录
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: 无权修改此素材
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: 素材不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      summary: 删除素材
+      description: 删除素材（需要登录，仅限作者）
+      tags:
+        - 素材
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 素材ID
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 删除成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "素材已删除"
+        '401':
+          description: 未授权，需要登录
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: 无权删除此素材
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: 素材不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /materials/author/me:
+    get:
+      summary: 获取我的素材
+      description: 获取当前登录用户上传的所有素材
+      tags:
+        - 素材
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          description: 页码
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          description: 每页数量
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  materials:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Material'
+                  total:
+                    type: integer
+        '401':
+          description: 未授权，需要登录
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # 订单相关API
+  /orders:
+    get:
+      summary: 获取订单列表
+      description: 获取当前用户的所有订单
+      tags:
+        - 订单
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          description: 页码
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          description: 每页数量
+          schema:
+            type: integer
+            default: 10
+        - name: status
+          in: query
+          description: 订单状态筛选
+          schema:
+            type: string
+            enum: [pending, completed, cancelled]
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  orders:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Order'
+                  total:
+                    type: integer
+        '401':
+          description: 未授权，需要登录
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      summary: 创建订单
+      description: 创建新订单（需要登录）
+      tags:
+        - 订单
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - items
+              properties:
+                items:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      materialId:
+                        type: integer
+                        example: 1
+                      quantity:
+                        type: integer
+                        example: 1
+      responses:
+        '201':
+          description: 创建成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '400':
+          description: 请求参数错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: 未授权，需要登录
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /orders/{id}:
+    get:
+      summary: 获取订单详情
+      description: 根据ID获取订单详细信息
+      tags:
+        - 订单
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 订单ID
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '401':
+          description: 未授权，需要登录
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: 订单不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /orders/{id}/status:
+    put:
+      summary: 更新订单状态
+      description: 更新订单状态（需要登录）
+      tags:
+        - 订单
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 订单ID
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - status
+              properties:
+                status:
+                  type: string
+                  enum: [pending, completed, cancelled]
+                  example: "completed"
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '400':
+          description: 请求参数错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: 未授权，需要登录
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: 订单不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # 收益相关API
+  /earnings/stats:
+    get:
+      summary: 获取收益统计
+      description: 获取当前用户的收益统计数据（需要登录）
+      tags:
+        - 收益
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EarningsStats'
+        '401':
+          description: 未授权，需要登录
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /earnings/details:
+    get:
+      summary: 获取收益详情
+      description: 获取当前用户的收益明细列表（需要登录）
+      tags:
+        - 收益
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          description: 页码
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          description: 每页数量
+          schema:
+            type: integer
+            default: 10
+        - name: startDate
+          in: query
+          description: 开始日期（YYYY-MM-DD）
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          description: 结束日期（YYYY-MM-DD）
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  earnings:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/EarningsDetail'
+                  total:
+                    type: integer
+        '401':
+          description: 未授权，需要登录
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
