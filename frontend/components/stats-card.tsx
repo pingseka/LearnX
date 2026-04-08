@@ -11,19 +11,19 @@ interface StatsCardProps {
     value: number
     isPositive: boolean
   }
-  gradient?: string
+  color?: string
 }
 
-export function StatsCard({ 
-  title, 
-  value, 
-  description, 
-  icon: Icon, 
+export function StatsCard({
+  title,
+  value,
+  description,
+  icon: Icon,
   trend,
-  gradient = "from-purple-500 to-pink-500"
+  color = "bg-primary"
 }: StatsCardProps) {
   return (
-    <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
+    <Card className="border-0 shadow-none bg-white rounded-lg">
       <CardContent className="p-6">
         <div className="flex items-start justify-between">
           <div className="space-y-2">
@@ -35,13 +35,13 @@ export function StatsCard({
             {trend && (
               <p className={cn(
                 "text-xs font-medium",
-                trend.isPositive ? "text-green-600" : "text-red-600"
+                trend.isPositive ? "text-green-600" : "text-red-500"
               )}>
                 {trend.isPositive ? "+" : "-"}{Math.abs(trend.value)}% 较上月
               </p>
             )}
           </div>
-          <div className={`h-12 w-12 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center shrink-0`}>
+          <div className={`h-12 w-12 rounded-lg ${color} flex items-center justify-center shrink-0`}>
             <Icon className="h-6 w-6 text-white" />
           </div>
         </div>

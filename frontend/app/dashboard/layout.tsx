@@ -1,14 +1,16 @@
 "use client"
 
+import { useEffect } from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { 
   LayoutDashboard, 
   FileText, 
   ShoppingBag, 
   TrendingUp, 
   Settings,
-  Menu
+  Menu,
+  Loader2
 } from "lucide-react"
 import { Header } from "@/components/layout/header"
 import { DashboardSidebar } from "@/components/layout/dashboard-sidebar"
@@ -19,6 +21,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 import { cn } from "@/lib/utils"
+import { useAuth } from "@/lib/auth-context"
 
 const sidebarItems = [
   { href: "/dashboard", label: "概览", icon: LayoutDashboard },
@@ -34,18 +37,35 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   const pathname = usePathname()
+  const router = useRouter()
+  const { isAuthenticated, isLoading } = useAuth()
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      router.push('/login')
+    }
+  }, [isLoading, isAuthenticated, router])
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
+  }
+
+  if (!isAuthenticated) {
+    return null
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-muted/30">
       <Header />
-
       <div className="flex-1 flex">
         <DashboardSidebar />
-
-        {/* Main Content */}
         <div className="flex-1 flex flex-col">
           {/* Mobile Navigation */}
-          <div className="lg:hidden sticky top-16 z-40 bg-background border-b border-border/40 px-4 py-3">
+          <div className="lg:hidden sticky top-16 z-40 bg-background border-b-2 border-border px-4 py-3">
             <div className="flex items-center justify-between">
               <h1 className="font-semibold">
                 {sidebarItems.find((item) => item.href === pathname)?.label || "个人中心"}
@@ -65,9 +85,9 @@ export default function DashboardLayout({
                           key={item.href}
                           href={item.href}
                           className={cn(
-                            "flex items-center gap-3 px-4 py-3 rounded-xl transition-all",
+                            "flex items-center gap-3 px-4 py-3 rounded-lg transition-all",
                             isActive
-                              ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+                              ? "bg-primary text-white"
                               : "text-muted-foreground hover:bg-muted hover:text-foreground"
                           )}
                         >
@@ -81,8 +101,6 @@ export default function DashboardLayout({
               </Sheet>
             </div>
           </div>
-
-          {/* Page Content */}
           <main className="flex-1 p-4 md:p-6 lg:p-8">
             {children}
           </main>

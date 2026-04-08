@@ -1,7 +1,6 @@
 import { Order, OrderItem } from '../models/order.model';
 import { Material } from '../models/material.model';
 import { Earnings } from '../models/earnings.model';
-import { Op } from 'sequelize';
 
 interface CreateOrderData {
   materials: Array<{
@@ -28,16 +27,10 @@ export const ordersService = {
 
       orderItems.push({
         materialId: material.id,
+        authorId: material.authorId,
         quantity: item.quantity,
-        price: material.price
-      });
-
-      // 创建收益记录
-      await Earnings.create({
-        userId: material.authorId,
-        amount: subtotal,
-        source: 'sale',
-        orderId: null // 稍后更新
+        price: material.price,
+        subtotal
       });
     }
 
@@ -58,11 +51,16 @@ export const ordersService = {
       });
     }
 
-    // 更新收益记录的订单ID
-    await Earnings.update(
-      { orderId: order.id },
-      { where: { orderId: null, userId: { [Op.in]: orderItems.map(item => item.materialId) } } }
-    );
+    // 创建收益记录（平台抽成10%，作者获得90%）
+    for (const item of orderItems) {
+      const authorEarnings = item.subtotal * 0.9;
+      await Earnings.create({
+        userId: item.authorId,
+        amount: authorEarnings,
+        source: 'sale',
+        orderId: order.id
+      });
+    }
 
     // 重新获取包含详情的订单
     const orderWithItems = await Order.findByPk(order.id, {

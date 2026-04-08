@@ -13,22 +13,22 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { currentUser } from "@/lib/mock-data"
+import { useAuth } from "@/lib/auth-context"
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [isLoggedIn, setIsLoggedIn] = useState(true) // 模拟登录状态
+  const { user, isAuthenticated, logout } = useAuth()
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 w-full border-b-2 border-border bg-background">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        {/* Logo */}
+        {/* Logo - solid blue icon, solid text */}
         <Link href="/" className="flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-pink-500">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
             <span className="text-lg font-bold text-white">研</span>
           </div>
-          <span className="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-            研料库
+          <span className="text-xl font-bold text-foreground">
+            研途共享
           </span>
         </Link>
 
@@ -45,28 +45,27 @@ export function Header() {
           </Link>
         </nav>
 
-        {/* Search Bar - Desktop */}
+        {/* Search Bar */}
         <div className="hidden md:flex items-center gap-2 flex-1 max-w-md mx-6">
           <div className="relative w-full">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               type="search"
               placeholder="搜索考研资料..."
-              className="pl-10 rounded-full bg-muted/50 border-0 focus-visible:ring-2 focus-visible:ring-primary/50"
+              className="pl-10 bg-muted border-0 focus-visible:bg-white focus-visible:border-2 focus-visible:border-primary rounded-lg"
             />
           </div>
         </div>
 
         {/* Right Section */}
         <div className="flex items-center gap-3">
-          {isLoggedIn ? (
+          {isAuthenticated && user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-9 w-9 rounded-full">
-                  <Avatar className="h-9 w-9 ring-2 ring-primary/20">
-                    <AvatarImage src={currentUser.avatar} alt={currentUser.name} />
-                    <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white">
-                      {currentUser.name.charAt(0)}
+                  <Avatar className="h-9 w-9">
+                    <AvatarFallback className="bg-primary text-white">
+                      {user?.name?.charAt(0) || 'U'}
                     </AvatarFallback>
                   </Avatar>
                 </Button>
@@ -74,12 +73,11 @@ export function Header() {
               <DropdownMenuContent className="w-56" align="end" forceMount>
                 <div className="flex items-center gap-3 p-3">
                   <Avatar className="h-10 w-10">
-                    <AvatarImage src={currentUser.avatar} alt={currentUser.name} />
-                    <AvatarFallback>{currentUser.name.charAt(0)}</AvatarFallback>
+                    <AvatarFallback className="bg-primary text-white">{user?.name?.charAt(0) || 'U'}</AvatarFallback>
                   </Avatar>
                   <div className="flex flex-col">
-                    <p className="text-sm font-medium">{currentUser.name}</p>
-                    <p className="text-xs text-muted-foreground">账户余额: ¥{currentUser.balance.toFixed(2)}</p>
+                    <p className="text-sm font-medium">{user.name}</p>
+                    <p className="text-xs text-muted-foreground">{user.email}</p>
                   </div>
                 </div>
                 <DropdownMenuSeparator />
@@ -114,9 +112,9 @@ export function Header() {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem 
+                <DropdownMenuItem
                   className="flex items-center gap-2 cursor-pointer text-destructive focus:text-destructive"
-                  onClick={() => setIsLoggedIn(false)}
+                  onClick={() => logout()}
                 >
                   <LogOut className="h-4 w-4" />
                   <span>退出登录</span>
@@ -128,7 +126,7 @@ export function Header() {
               <Button variant="ghost" asChild>
                 <Link href="/login">登录</Link>
               </Button>
-              <Button asChild className="rounded-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600">
+              <Button asChild className="bg-primary hover:bg-blue-600 transition-all duration-200 hover:scale-105">
                 <Link href="/register">注册</Link>
               </Button>
             </div>
@@ -148,49 +146,33 @@ export function Header() {
 
       {/* Mobile Menu */}
       {isMenuOpen && (
-        <div className="md:hidden border-t border-border/40 bg-background">
+        <div className="md:hidden border-t-2 border-border bg-background">
           <div className="container mx-auto px-4 py-4 space-y-4">
-            {/* Mobile Search */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 type="search"
                 placeholder="搜索考研资料..."
-                className="pl-10 rounded-full bg-muted/50"
+                className="pl-10 bg-muted border-0 rounded-lg"
               />
             </div>
-            
-            {/* Mobile Nav Links */}
             <nav className="flex flex-col gap-2">
-              <Link 
-                href="/materials" 
-                className="px-4 py-2 rounded-lg hover:bg-muted transition-colors"
-                onClick={() => setIsMenuOpen(false)}
-              >
+              <Link href="/materials" className="px-4 py-2 rounded-lg hover:bg-muted transition-colors" onClick={() => setIsMenuOpen(false)}>
                 资料市场
               </Link>
-              <Link 
-                href="/upload" 
-                className="px-4 py-2 rounded-lg hover:bg-muted transition-colors"
-                onClick={() => setIsMenuOpen(false)}
-              >
+              <Link href="/upload" className="px-4 py-2 rounded-lg hover:bg-muted transition-colors" onClick={() => setIsMenuOpen(false)}>
                 上传资料
               </Link>
-              <Link 
-                href="/dashboard" 
-                className="px-4 py-2 rounded-lg hover:bg-muted transition-colors"
-                onClick={() => setIsMenuOpen(false)}
-              >
+              <Link href="/dashboard" className="px-4 py-2 rounded-lg hover:bg-muted transition-colors" onClick={() => setIsMenuOpen(false)}>
                 个人中心
               </Link>
             </nav>
-
-            {!isLoggedIn && (
+            {!isAuthenticated && (
               <div className="flex gap-2 pt-2">
                 <Button variant="outline" className="flex-1" asChild>
                   <Link href="/login">登录</Link>
                 </Button>
-                <Button className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500" asChild>
+                <Button className="flex-1 bg-primary hover:bg-blue-600" asChild>
                   <Link href="/register">注册</Link>
                 </Button>
               </div>

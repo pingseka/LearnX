@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { body, validationResult } from 'express-validator';
 import { authService } from '../services/auth.service';
+import { success, error as apiError } from '../utils/response';
 
 export const authController = {
   register: [
@@ -14,13 +15,13 @@ export const authController = {
         // 检查验证错误
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-          return res.status(400).json({ errors: errors.array() });
+          return res.status(400).json(apiError(errors.array().map(e => e.msg).join('; ')));
         }
 
         const { email, password, name } = req.body;
         const result = await authService.register({ email, password, name });
         
-        res.status(201).json(result);
+        res.status(201).json(success(result));
       } catch (error) {
         next(error);
       }
@@ -37,13 +38,13 @@ export const authController = {
         // 检查验证错误
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-          return res.status(400).json({ errors: errors.array() });
+          return res.status(400).json(apiError(errors.array().map(e => e.msg).join('; ')));
         }
 
         const { email, password } = req.body;
         const result = await authService.login({ email, password });
         
-        res.status(200).json(result);
+        res.status(200).json(success(result, 'Login successful'));
       } catch (error) {
         next(error);
       }
@@ -55,12 +56,12 @@ export const authController = {
       const userId = (req as any).user.userId;
       const user = await authService.getUserById(userId);
       
-      res.status(200).json({
+      res.status(200).json(success({
         id: user.id,
         email: user.email,
         name: user.name,
         role: user.role
-      });
+      }));
     } catch (error) {
       next(error);
     }

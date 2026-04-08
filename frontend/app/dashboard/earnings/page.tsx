@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { 
   Wallet, 
   TrendingUp, 
@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   Dialog,
   DialogContent,
@@ -35,6 +36,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts"
+import { getEarningsStats, getEarningsDetails } from "@/api/earnings"
 import {
   currentUser,
   userEarnings,
@@ -55,6 +57,23 @@ export default function EarningsPage() {
   const [isWithdrawing, setIsWithdrawing] = useState(false)
   const [withdrawSuccess, setWithdrawSuccess] = useState(false)
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        await Promise.allSettled([
+          getEarningsStats(),
+          getEarningsDetails(),
+        ])
+      } catch {
+        // Keep mock data as fallback
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchData()
+  }, [])
 
   const handleWithdraw = async () => {
     setIsWithdrawing(true)
@@ -70,6 +89,21 @@ export default function EarningsPage() {
 
   const monthlyTotal = userEarnings.reduce((sum, e) => sum + e.netAmount, 0)
 
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-8 w-48" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <Skeleton key={i} className="h-32 rounded-lg" />
+          ))}
+        </div>
+        <Skeleton className="h-[300px] rounded-lg" />
+        <Skeleton className="h-64 rounded-lg" />
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -80,7 +114,7 @@ export default function EarningsPage() {
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="self-start bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600">
+            <Button className="self-start bg-primary hover:bg-blue-600 transition-all duration-200 hover:scale-105">
               <ArrowDownToLine className="h-4 w-4 mr-2" />
               申请提现
             </Button>
@@ -162,7 +196,7 @@ export default function EarningsPage() {
                   <Button
                     onClick={handleWithdraw}
                     disabled={isWithdrawing || !withdrawAmount || parseFloat(withdrawAmount) < 10 || parseFloat(withdrawAmount) > currentUser.balance}
-                    className="bg-gradient-to-r from-purple-500 to-pink-500"
+                    className="bg-primary hover:bg-blue-600"
                   >
                     {isWithdrawing ? (
                       <>
@@ -186,31 +220,31 @@ export default function EarningsPage() {
           title="可提现余额"
           value={formatPrice(currentUser.balance)}
           icon={Wallet}
-          gradient="from-purple-500 to-pink-500"
+          color="bg-blue-500"
         />
         <StatsCard
           title="本月收益"
           value={formatPrice(monthlyTotal)}
           icon={TrendingUp}
           trend={{ value: 15.2, isPositive: true }}
-          gradient="from-green-500 to-teal-500"
+          color="bg-emerald-500"
         />
         <StatsCard
           title="累计收益"
           value={formatPrice(currentUser.totalEarnings)}
           icon={TrendingUp}
-          gradient="from-blue-500 to-cyan-500"
+          color="bg-amber-500"
         />
         <StatsCard
           title="已提现"
           value={formatPrice(currentUser.totalWithdrawn)}
           icon={ArrowDownToLine}
-          gradient="from-orange-500 to-red-500"
+          color="bg-red-500"
         />
       </div>
 
       {/* Chart */}
-      <Card className="border-0 shadow-sm">
+      <Card className="border-0">
         <CardHeader>
           <CardTitle className="text-lg font-semibold">收益趋势</CardTitle>
         </CardHeader>
@@ -220,8 +254,8 @@ export default function EarningsPage() {
               <AreaChart data={monthlyEarningsData}>
                 <defs>
                   <linearGradient id="colorEarnings" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#a855f7" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#a855f7" stopOpacity={0} />
+                    <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
@@ -230,12 +264,12 @@ export default function EarningsPage() {
                 <Tooltip
                   formatter={(value: number) => [formatPrice(value), "收益"]}
                   labelStyle={{ color: "#374151" }}
-                  contentStyle={{ borderRadius: "8px", border: "none", boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)" }}
+                  contentStyle={{ borderRadius: "8px", border: "none" }}
                 />
                 <Area
                   type="monotone"
                   dataKey="earnings"
-                  stroke="#a855f7"
+                  stroke="#3B82F6"
                   strokeWidth={2}
                   fillOpacity={1}
                   fill="url(#colorEarnings)"
@@ -254,7 +288,7 @@ export default function EarningsPage() {
         </TabsList>
 
         <TabsContent value="earnings" className="mt-4">
-          <Card className="border-0 shadow-sm">
+          <Card className="border-0">
             <CardContent className="p-0">
               <div className="divide-y">
                 {userEarnings.map((earning) => (
@@ -279,14 +313,14 @@ export default function EarningsPage() {
         </TabsContent>
 
         <TabsContent value="withdrawals" className="mt-4">
-          <Card className="border-0 shadow-sm">
+          <Card className="border-0">
             <CardContent className="p-0">
               <div className="divide-y">
                 {userWithdrawals.map((withdrawal) => (
                   <div key={withdrawal.id} className="flex items-center justify-between p-4">
                     <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-full bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center">
-                        <ArrowDownToLine className="h-5 w-5 text-purple-500" />
+                      <div className="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center">
+                        <ArrowDownToLine className="h-5 w-5 text-primary" />
                       </div>
                       <div>
                         <p className="font-medium">提现到 {withdrawal.bankInfo}</p>

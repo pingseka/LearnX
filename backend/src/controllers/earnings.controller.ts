@@ -1,12 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
 import { earningsService } from '../services/earnings.service';
+import { success } from '../utils/response';
 
 export const earningsController = {
   getStats: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userId = (req as any).user.userId;
       const result = await earningsService.getStats(userId);
-      res.status(200).json(result);
+      res.status(200).json(success(result));
     } catch (error) {
       next(error);
     }
@@ -19,7 +20,7 @@ export const earningsController = {
       const limit = parseInt(req.query.limit as string) || 10;
 
       const result = await earningsService.getDetails(userId, page, limit);
-      res.status(200).json(result);
+      res.status(200).json(success(result));
     } catch (error) {
       next(error);
     }

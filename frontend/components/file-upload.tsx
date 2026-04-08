@@ -127,8 +127,8 @@ export function FileUpload({ onFileSelect, accept = ".pdf,.docx", maxSize = 50 }
           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
         />
         <div className="flex flex-col items-center gap-4 text-center">
-          <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center">
-            <Upload className="h-8 w-8 text-purple-500" />
+          <div className="h-16 w-16 rounded-lg bg-blue-50 flex items-center justify-center">
+            <Upload className="h-8 w-8 text-primary" />
           </div>
           <div>
             <p className="font-medium">
@@ -138,7 +138,7 @@ export function FileUpload({ onFileSelect, accept = ".pdf,.docx", maxSize = 50 }
               支持 PDF、Word 文档，最大 {maxSize}MB
             </p>
           </div>
-          <Button type="button" variant="outline" className="rounded-full">
+          <Button type="button" variant="outline" className="rounded-md">
             选择文件
           </Button>
         </div>

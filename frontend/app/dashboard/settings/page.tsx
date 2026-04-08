@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { User, Mail, Phone, Lock, CreditCard, Bell, Check, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -9,17 +9,46 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
+import { Skeleton } from "@/components/ui/skeleton"
+import { getProfile } from "@/api/auth"
+import { useAuth } from "@/lib/auth-context"
 import { currentUser } from "@/lib/mock-data"
 
 export default function SettingsPage() {
+  const { user } = useAuth()
   const [isSaving, setIsSaving] = useState(false)
   const [saveSuccess, setSaveSuccess] = useState(false)
+  const [loading, setLoading] = useState(true)
 
   const [formData, setFormData] = useState({
     name: currentUser.name,
     email: currentUser.email,
     phone: "138****8888",
   })
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const profile = await getProfile()
+        setFormData({
+          name: profile.name,
+          email: profile.email,
+          phone: "138****8888",
+        })
+      } catch {
+        if (user) {
+          setFormData({
+            name: user.name,
+            email: user.email,
+            phone: "138****8888",
+          })
+        }
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchData()
+  }, [user])
 
   const [notifications, setNotifications] = useState({
     orderNotify: true,
@@ -44,8 +73,16 @@ export default function SettingsPage() {
         <p className="text-muted-foreground">管理你的账户信息和偏好设置</p>
       </div>
 
+      {loading ? (
+        <div className="space-y-6">
+          <Skeleton className="h-48 rounded-lg" />
+          <Skeleton className="h-32 rounded-lg" />
+          <Skeleton className="h-32 rounded-lg" />
+        </div>
+      ) : (
+      <>
       {/* Profile Section */}
-      <Card className="border-0 shadow-sm">
+      <Card className="border-0">
         <CardHeader>
           <CardTitle className="text-lg">个人信息</CardTitle>
           <CardDescription>更新你的头像和个人资料</CardDescription>
@@ -54,9 +91,8 @@ export default function SettingsPage() {
           {/* Avatar */}
           <div className="flex items-center gap-4">
             <Avatar className="h-20 w-20">
-              <AvatarImage src={currentUser.avatar} alt={currentUser.name} />
-              <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white text-2xl">
-                {currentUser.name.charAt(0)}
+              <AvatarFallback className="bg-primary text-white text-2xl">
+                {formData.name?.charAt(0) || 'U'}
               </AvatarFallback>
             </Avatar>
             <div>
@@ -119,7 +155,7 @@ export default function SettingsPage() {
       </Card>
 
       {/* Security Section */}
-      <Card className="border-0 shadow-sm">
+      <Card className="border-0">
         <CardHeader>
           <CardTitle className="text-lg">安全设置</CardTitle>
           <CardDescription>管理你的密码和安全选项</CardDescription>
@@ -127,8 +163,8 @@ export default function SettingsPage() {
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between py-2">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-purple-100 flex items-center justify-center">
-                <Lock className="h-5 w-5 text-purple-600" />
+              <div className="h-10 w-10 rounded-lg bg-blue-50 flex items-center justify-center">
+                <Lock className="h-5 w-5 text-primary" />
               </div>
               <div>
                 <p className="font-medium">登录密码</p>
@@ -141,7 +177,7 @@ export default function SettingsPage() {
       </Card>
 
       {/* Payment Section */}
-      <Card className="border-0 shadow-sm">
+      <Card className="border-0">
         <CardHeader>
           <CardTitle className="text-lg">收款设置</CardTitle>
           <CardDescription>设置你的收款账户信息</CardDescription>
@@ -163,7 +199,7 @@ export default function SettingsPage() {
       </Card>
 
       {/* Notification Section */}
-      <Card className="border-0 shadow-sm">
+      <Card className="border-0">
         <CardHeader>
           <CardTitle className="text-lg">通知设置</CardTitle>
           <CardDescription>管理你接收的通知类型</CardDescription>
@@ -244,7 +280,7 @@ export default function SettingsPage() {
         <Button
           onClick={handleSave}
           disabled={isSaving}
-          className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+          className="bg-primary hover:bg-blue-600 transition-all duration-200 hover:scale-105"
         >
           {isSaving ? (
             <>
@@ -256,6 +292,8 @@ export default function SettingsPage() {
           )}
         </Button>
       </div>
+      </>
+      )}
     </div>
   )
 }

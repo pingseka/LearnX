@@ -73,7 +73,7 @@ export function PurchaseDialog({ material, open, onOpenChange, onSuccess }: Purc
             <h4 className="font-medium line-clamp-2">{material.title}</h4>
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">资料价格</span>
-              <span className="font-semibold text-lg bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+              <span className="font-bold text-lg text-primary">
                 {formatPrice(material.price)}
               </span>
             </div>
@@ -117,7 +117,7 @@ export function PurchaseDialog({ material, open, onOpenChange, onSuccess }: Purc
           <Button
             onClick={handlePurchase}
             disabled={isProcessing}
-            className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+            className="bg-primary hover:bg-blue-600"
           >
             {isProcessing ? (
               <>

@@ -76,10 +76,10 @@ export interface Review {
 
 // 分类配置
 export const categories: { id: Category; name: string; icon: string; color: string; count: number }[] = [
-  { id: 'politics', name: '政治', icon: 'BookOpen', color: 'from-red-500 to-orange-500', count: 1256 },
-  { id: 'english', name: '英语', icon: 'Globe', color: 'from-blue-500 to-cyan-500', count: 2341 },
-  { id: 'math', name: '数学', icon: 'Calculator', color: 'from-purple-500 to-pink-500', count: 1893 },
-  { id: 'professional', name: '专业课', icon: 'GraduationCap', color: 'from-green-500 to-teal-500', count: 3567 },
+  { id: 'politics', name: '政治', icon: 'BookOpen', color: 'bg-red-500', count: 1256 },
+  { id: 'english', name: '英语', icon: 'Globe', color: 'bg-blue-500', count: 2341 },
+  { id: 'math', name: '数学', icon: 'Calculator', color: 'bg-emerald-500', count: 1893 },
+  { id: 'professional', name: '专业课', icon: 'GraduationCap', color: 'bg-amber-500', count: 3567 },
 ]
 
 // 当前登录用户
@@ -487,10 +487,10 @@ export function getCategoryName(category: Category): string {
 
 export function getCategoryColor(category: Category): string {
   const map: Record<Category, string> = {
-    politics: 'from-red-500 to-orange-500',
-    english: 'from-blue-500 to-cyan-500',
-    math: 'from-purple-500 to-pink-500',
-    professional: 'from-green-500 to-teal-500',
+    politics: 'bg-red-500',
+    english: 'bg-blue-500',
+    math: 'bg-emerald-500',
+    professional: 'bg-amber-500',
   }
   return map[category]
 }

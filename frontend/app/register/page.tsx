@@ -11,10 +11,12 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { register, saveToken } from "../../api/auth"
+import { useAuth } from "@/lib/auth-context"
 import { toast } from "sonner"
 
 export default function RegisterPage() {
   const router = useRouter()
+  const { refreshUser } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [formData, setFormData] = useState({
@@ -43,6 +45,7 @@ export default function RegisterPage() {
         password: formData.password
       })
       saveToken(response.token)
+      await refreshUser()
       toast.success("注册成功")
       router.push("/dashboard")
     } catch (error: any) {
@@ -66,39 +69,44 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen flex">
-      {/* Left Side - Decorative */}
-      <div className="hidden lg:flex flex-1 bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400 items-center justify-center p-8">
-        <div className="max-w-md text-white text-center">
-          <h2 className="text-3xl font-bold mb-4">加入研料库</h2>
-          <p className="text-white/90 mb-8">
+      {/* Left Side - Decorative (solid blue, no gradient) */}
+      <div className="hidden lg:flex flex-1 bg-primary items-center justify-center p-8 relative overflow-hidden">
+        {/* Geometric decoration */}
+        <div className="absolute -top-20 -right-20 h-64 w-64 rounded-full bg-white/5" />
+        <div className="absolute -bottom-32 -left-32 h-80 w-80 rounded-full bg-white/5" />
+        <div className="absolute top-1/3 right-1/4 h-40 w-40 rotate-45 bg-white/5 rounded-lg" />
+
+        <div className="max-w-md text-white text-center relative z-10">
+          <h2 className="text-3xl font-bold mb-4">加入研途共享</h2>
+          <p className="text-white/80 mb-8">
             开启你的知识变现之旅，分享考研资料获取收益，或发现优质资料助力备考。
           </p>
           <div className="space-y-4 text-left">
-            <div className="flex items-center gap-3 p-4 rounded-2xl bg-white/10 backdrop-blur-sm">
-              <div className="h-10 w-10 rounded-xl bg-white/20 flex items-center justify-center">
+            <div className="flex items-center gap-3 p-4 rounded-lg bg-white/10">
+              <div className="h-10 w-10 rounded-lg bg-white/20 flex items-center justify-center">
                 <Check className="h-5 w-5" />
               </div>
               <div>
                 <p className="font-medium">上传即赚钱</p>
-                <p className="text-sm text-white/80">每笔交易获得 90% 收益</p>
+                <p className="text-sm text-white/70">每笔交易获得 90% 收益</p>
               </div>
             </div>
-            <div className="flex items-center gap-3 p-4 rounded-2xl bg-white/10 backdrop-blur-sm">
-              <div className="h-10 w-10 rounded-xl bg-white/20 flex items-center justify-center">
+            <div className="flex items-center gap-3 p-4 rounded-lg bg-white/10">
+              <div className="h-10 w-10 rounded-lg bg-white/20 flex items-center justify-center">
                 <Check className="h-5 w-5" />
               </div>
               <div>
                 <p className="font-medium">海量优质资料</p>
-                <p className="text-sm text-white/80">覆盖考研全科目</p>
+                <p className="text-sm text-white/70">覆盖考研全科目</p>
               </div>
             </div>
-            <div className="flex items-center gap-3 p-4 rounded-2xl bg-white/10 backdrop-blur-sm">
-              <div className="h-10 w-10 rounded-xl bg-white/20 flex items-center justify-center">
+            <div className="flex items-center gap-3 p-4 rounded-lg bg-white/10">
+              <div className="h-10 w-10 rounded-lg bg-white/20 flex items-center justify-center">
                 <Check className="h-5 w-5" />
               </div>
               <div>
                 <p className="font-medium">安全有保障</p>
-                <p className="text-sm text-white/80">平台担保，不满意可退款</p>
+                <p className="text-sm text-white/70">平台担保，不满意可退款</p>
               </div>
             </div>
           </div>
@@ -108,20 +116,17 @@ export default function RegisterPage() {
       {/* Right Side - Form */}
       <div className="flex-1 flex items-center justify-center p-4 md:p-8">
         <div className="w-full max-w-md">
-          {/* Logo */}
           <Link href="/" className="flex items-center gap-2 mb-8">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-pink-500">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
               <span className="text-xl font-bold text-white">研</span>
             </div>
-            <span className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-              研料库
-            </span>
+            <span className="text-2xl font-bold text-foreground">研途共享</span>
           </Link>
 
-          <Card className="border-0 shadow-lg">
+          <Card className="border-0">
             <CardHeader className="space-y-1 pb-4">
               <CardTitle className="text-2xl">创建账户</CardTitle>
-              <CardDescription>注册成为研料库会员</CardDescription>
+              <CardDescription>注册成为研途共享会员</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -135,7 +140,7 @@ export default function RegisterPage() {
                       placeholder="请输入昵称"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="pl-10"
+                      className="pl-10 bg-muted border-0 focus-visible:bg-white focus-visible:border-2 focus-visible:border-primary"
                       required
                     />
                   </div>
@@ -151,7 +156,7 @@ export default function RegisterPage() {
                       placeholder="请输入邮箱地址"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="pl-10"
+                      className="pl-10 bg-muted border-0 focus-visible:bg-white focus-visible:border-2 focus-visible:border-primary"
                       required
                     />
                   </div>
@@ -167,7 +172,7 @@ export default function RegisterPage() {
                       placeholder="请设置密码（至少6位）"
                       value={formData.password}
                       onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                      className="pl-10 pr-10"
+                      className="pl-10 pr-10 bg-muted border-0 focus-visible:bg-white focus-visible:border-2 focus-visible:border-primary"
                       required
                       minLength={6}
                     />
@@ -212,7 +217,7 @@ export default function RegisterPage() {
                       placeholder="请再次输入密码"
                       value={formData.confirmPassword}
                       onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                      className="pl-10"
+                      className="pl-10 bg-muted border-0 focus-visible:bg-white focus-visible:border-2 focus-visible:border-primary"
                       required
                     />
                   </div>
@@ -242,7 +247,7 @@ export default function RegisterPage() {
 
                 <Button
                   type="submit"
-                  className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                  className="w-full h-12 bg-primary hover:bg-blue-600 transition-all duration-200 hover:scale-105 text-base"
                   disabled={isLoading || !formData.agreeTerms}
                 >
                   {isLoading ? (
@@ -260,15 +265,15 @@ export default function RegisterPage() {
                     <Separator className="w-full" />
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-card px-2 text-muted-foreground">或者</span>
+                    <span className="bg-background px-2 text-muted-foreground">或者</span>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
-                  <Button variant="outline" type="button">
+                  <Button variant="outline" type="button" className="border-2">
                     微信注册
                   </Button>
-                  <Button variant="outline" type="button">
+                  <Button variant="outline" type="button" className="border-2">
                     QQ注册
                   </Button>
                 </div>

@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { body, validationResult } from 'express-validator';
 import { materialsService } from '../services/materials.service';
 import { upload } from '../utils/upload';
+import { success, error as apiError } from '../utils/response';
 
 export const materialsController = {
   create: [
@@ -22,12 +23,12 @@ export const materialsController = {
         // 检查验证错误
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-          return res.status(400).json({ errors: errors.array() });
+          return res.status(400).json(apiError(errors.array().map(e => e.msg).join('; ')));
         }
 
         // 检查文件是否上传
         if (!req.files || !('file' in req.files)) {
-          return res.status(400).json({ message: '请上传文件' });
+          return res.status(400).json(apiError('请上传文件'));
         }
 
         const file = (req.files as any).file[0];
@@ -46,7 +47,7 @@ export const materialsController = {
           tags: tags ? tags.split(',') : []
         });
 
-        res.status(201).json(result);
+        res.status(201).json(success(result));
       } catch (error) {
         next(error);
       }
@@ -61,7 +62,7 @@ export const materialsController = {
       const search = req.query.search as string;
 
       const result = await materialsService.getAll(page, limit, category, search);
-      res.status(200).json(result);
+      res.status(200).json(success(result));
     } catch (error) {
       next(error);
     }
@@ -71,7 +72,7 @@ export const materialsController = {
     try {
       const { id } = req.params;
       const result = await materialsService.getById(id);
-      res.status(200).json(result);
+      res.status(200).json(success(result));
     } catch (error) {
       next(error);
     }
@@ -84,7 +85,7 @@ export const materialsController = {
       const limit = parseInt(req.query.limit as string) || 10;
 
       const result = await materialsService.getByAuthor(authorId, page, limit);
-      res.status(200).json(result);
+      res.status(200).json(success(result));
     } catch (error) {
       next(error);
     }
@@ -108,7 +109,7 @@ export const materialsController = {
         // 检查验证错误
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-          return res.status(400).json({ errors: errors.array() });
+          return res.status(400).json(apiError(errors.array().map(e => e.msg).join('; ')));
         }
 
         const { id } = req.params;
@@ -127,7 +128,7 @@ export const materialsController = {
         if (thumbnail) updateData.thumbnailUrl = `/uploads/${thumbnail.filename}`;
 
         const result = await materialsService.update(id, updateData, authorId);
-        res.status(200).json(result);
+        res.status(200).json(success(result));
       } catch (error) {
         next(error);
       }
@@ -140,7 +141,7 @@ export const materialsController = {
       const authorId = (req as any).user.userId;
 
       const result = await materialsService.delete(id, authorId);
-      res.status(200).json(result);
+      res.status(200).json(success(result));
     } catch (error) {
       next(error);
     }

@@ -1,11 +1,12 @@
 "use client"
 
-import { useState, useMemo, Suspense } from "react"
+import { useState, useMemo, useEffect, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { Search, SlidersHorizontal, ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   Select,
   SelectContent,
@@ -24,7 +25,8 @@ import { Slider } from "@/components/ui/slider"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { MaterialCard } from "@/components/material-card"
-import { materials, categories, type Category } from "@/lib/mock-data"
+import { getMaterials } from "@/api/materials"
+import { materials as mockMaterials, categories, type Category } from "@/lib/mock-data"
 
 function MaterialsContent() {
   const searchParams = useSearchParams()
@@ -34,6 +36,24 @@ function MaterialsContent() {
   const [selectedCategory, setSelectedCategory] = useState<Category | "all">(initialCategory || "all")
   const [sortBy, setSortBy] = useState<"popular" | "newest" | "price-low" | "price-high">('popular')
   const [priceRange, setPriceRange] = useState([0, 100])
+  const [materials, setMaterials] = useState(mockMaterials)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const result = await getMaterials()
+        if (result?.materials?.length > 0) {
+          // API data would need mapping; for now keep mock
+        }
+      } catch {
+        // Keep mock data as fallback
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchData()
+  }, [])
 
   const filteredMaterials = useMemo(() => {
     let filtered = [...materials]
@@ -86,7 +106,7 @@ function MaterialsContent() {
             variant={selectedCategory === "all" ? "default" : "outline"}
             className={`cursor-pointer transition-all ${
               selectedCategory === "all"
-                ? "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                ? "bg-primary hover:bg-blue-600"
                 : "hover:bg-muted"
             }`}
             onClick={() => setSelectedCategory("all")}
@@ -99,7 +119,7 @@ function MaterialsContent() {
               variant={selectedCategory === cat.id ? "default" : "outline"}
               className={`cursor-pointer transition-all ${
                 selectedCategory === cat.id
-                  ? "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                  ? "bg-primary hover:bg-blue-600"
                   : "hover:bg-muted"
               }`}
               onClick={() => setSelectedCategory(cat.id)}
@@ -134,10 +154,15 @@ function MaterialsContent() {
 
       <main className="flex-1">
         {/* Page Header */}
-        <div className="bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400 py-12 md:py-16">
-          <div className="container mx-auto px-4">
+        <div className="bg-primary py-12 md:py-16 relative overflow-hidden">
+          {/* Geometric decoration */}
+          <div className="absolute -top-16 -right-16 h-48 w-48 rounded-full bg-white/5" />
+          <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-white/5" />
+          <div className="absolute top-1/3 right-1/4 h-32 w-32 rotate-45 bg-white/5 rounded-lg" />
+
+          <div className="container mx-auto px-4 relative z-10">
             <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">资料市场</h1>
-            <p className="text-white/90 mb-6">发现优质考研资料，助你高效备考</p>
+            <p className="text-white/80 mb-6">发现优质考研资料，助你高效备考</p>
 
             {/* Search Bar */}
             <div className="max-w-2xl">
@@ -149,7 +174,7 @@ function MaterialsContent() {
                     placeholder="搜索资料标题、关键词..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-12 h-12 rounded-xl bg-white border-0 text-base"
+                    className="pl-12 h-12 rounded-lg bg-white border-0 text-base"
                   />
                 </div>
               </div>
@@ -162,7 +187,7 @@ function MaterialsContent() {
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Sidebar Filters - Desktop */}
             <aside className="hidden lg:block w-64 shrink-0">
-              <div className="sticky top-24 bg-card rounded-2xl p-6 shadow-sm border">
+              <div className="sticky top-24 bg-card rounded-lg p-6">
                 <h3 className="font-semibold mb-4">筛选条件</h3>
                 <FilterContent />
               </div>
@@ -218,7 +243,7 @@ function MaterialsContent() {
                   variant={selectedCategory === "all" ? "default" : "outline"}
                   className={`cursor-pointer ${
                     selectedCategory === "all"
-                      ? "bg-gradient-to-r from-purple-500 to-pink-500"
+                      ? "bg-primary"
                       : ""
                   }`}
                   onClick={() => setSelectedCategory("all")}
@@ -231,7 +256,7 @@ function MaterialsContent() {
                     variant={selectedCategory === cat.id ? "default" : "outline"}
                     className={`cursor-pointer ${
                       selectedCategory === cat.id
-                        ? "bg-gradient-to-r from-purple-500 to-pink-500"
+                        ? "bg-primary"
                         : ""
                     }`}
                     onClick={() => setSelectedCategory(cat.id)}
@@ -242,7 +267,13 @@ function MaterialsContent() {
               </div>
 
               {/* Materials Grid */}
-              {filteredMaterials.length > 0 ? (
+              {loading ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
+                  {[...Array(6)].map((_, i) => (
+                    <Skeleton key={i} className="h-64 rounded-lg" />
+                  ))}
+                </div>
+              ) : filteredMaterials.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
                   {filteredMaterials.map((material) => (
                     <MaterialCard key={material.id} material={material} />

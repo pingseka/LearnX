@@ -1,10 +1,12 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { FileText, Download, ExternalLink } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   Table,
   TableBody,
@@ -13,7 +15,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { userOrders, formatPrice, formatDate } from "@/lib/mock-data"
+import { getOrders } from "@/api/orders"
+import { userOrders, formatPrice, formatDate, type Order } from "@/lib/mock-data"
 
 const statusMap = {
   pending: { label: "待支付", variant: "outline" as const },
@@ -22,6 +25,34 @@ const statusMap = {
 }
 
 export default function OrdersPage() {
+  const [orders, setOrders] = useState<Order[]>(userOrders)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        await getOrders()
+      } catch {
+        // Keep mock data as fallback
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchData()
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-8 w-48" />
+        <div className="space-y-4">
+          {[...Array(4)].map((_, i) => (
+            <Skeleton key={i} className="h-20 rounded-lg" />
+          ))}
+        </div>
+      </div>
+    )
+  }
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -31,7 +62,7 @@ export default function OrdersPage() {
       </div>
 
       {/* Orders Table - Desktop */}
-      <Card className="border-0 shadow-sm hidden md:block">
+      <Card className="border-0 hidden md:block">
         <CardContent className="p-0">
           <Table>
             <TableHeader>
@@ -45,12 +76,12 @@ export default function OrdersPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {userOrders.map((order) => (
+              {orders.map((order) => (
                 <TableRow key={order.id}>
                   <TableCell>
                     <div className="flex items-center gap-3">
-                      <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center shrink-0">
-                        <FileText className="h-6 w-6 text-purple-300" />
+                      <div className="h-12 w-12 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+                        <FileText className="h-6 w-6 text-primary" />
                       </div>
                       <div className="min-w-0">
                         <p className="font-medium truncate max-w-[300px]">{order.materialTitle}</p>
@@ -78,7 +109,7 @@ export default function OrdersPage() {
                         </Link>
                       </Button>
                       {order.status === "completed" && (
-                        <Button size="sm" className="bg-gradient-to-r from-purple-500 to-pink-500">
+                        <Button size="sm" className="bg-primary hover:bg-blue-600">
                           <Download className="h-3 w-3 mr-1" />
                           下载
                         </Button>
@@ -94,12 +125,12 @@ export default function OrdersPage() {
 
       {/* Orders List - Mobile */}
       <div className="md:hidden space-y-4">
-        {userOrders.map((order) => (
-          <Card key={order.id} className="border-0 shadow-sm">
+        {orders.map((order) => (
+          <Card key={order.id} className="border-0">
             <CardContent className="p-4">
               <div className="flex items-start gap-3 mb-4">
-                <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center shrink-0">
-                  <FileText className="h-7 w-7 text-purple-300" />
+                <div className="h-14 w-14 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+                  <FileText className="h-7 w-7 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-medium line-clamp-2 mb-1">{order.materialTitle}</p>
@@ -129,7 +160,7 @@ export default function OrdersPage() {
                     </Link>
                   </Button>
                   {order.status === "completed" && (
-                    <Button size="sm" className="bg-gradient-to-r from-purple-500 to-pink-500">
+                    <Button size="sm" className="bg-primary hover:bg-blue-600">
                       <Download className="h-3 w-3 mr-1" />
                       下载
                     </Button>
@@ -141,15 +172,15 @@ export default function OrdersPage() {
         ))}
       </div>
 
-      {userOrders.length === 0 && (
-        <Card className="border-0 shadow-sm">
+      {orders.length === 0 && (
+        <Card className="border-0">
           <CardContent className="p-12 text-center">
             <div className="h-20 w-20 mx-auto rounded-full bg-muted flex items-center justify-center mb-4">
               <FileText className="h-10 w-10 text-muted-foreground" />
             </div>
             <h3 className="text-lg font-semibold mb-2">暂无订单</h3>
             <p className="text-muted-foreground mb-6">你还没有购买任何资料</p>
-            <Button asChild className="bg-gradient-to-r from-purple-500 to-pink-500">
+            <Button asChild className="bg-primary hover:bg-blue-600">
               <Link href="/materials">浏览资料市场</Link>
             </Button>
           </CardContent>

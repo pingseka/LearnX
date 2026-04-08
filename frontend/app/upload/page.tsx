@@ -87,7 +87,7 @@ export default function UploadPage() {
       <div className="min-h-screen flex flex-col bg-background">
         <Header />
         <main className="flex-1 flex items-center justify-center p-4">
-          <Card className="w-full max-w-md border-0 shadow-lg">
+          <Card className="w-full max-w-md border-0">
             <CardContent className="p-8 text-center">
               <div className="h-20 w-20 mx-auto rounded-full bg-green-100 flex items-center justify-center mb-6">
                 <Check className="h-10 w-10 text-green-600" />
@@ -97,7 +97,7 @@ export default function UploadPage() {
                 您的资料已成功发布，审核通过后将在市场展示
               </p>
               <div className="flex flex-col gap-3">
-                <Button asChild className="bg-gradient-to-r from-purple-500 to-pink-500">
+                <Button asChild className="bg-primary hover:bg-blue-600">
                   <Link href="/dashboard/materials">查看我的资料</Link>
                 </Button>
                 <Button variant="outline" asChild>
@@ -118,8 +118,11 @@ export default function UploadPage() {
 
       <main className="flex-1">
         {/* Page Header */}
-        <div className="bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400 py-12">
-          <div className="container mx-auto px-4">
+        <div className="bg-primary py-12 relative overflow-hidden">
+          <div className="absolute top-4 right-12 w-24 h-24 rounded-full bg-white/5" />
+          <div className="absolute bottom-2 left-8 w-16 h-16 rounded bg-white/5 rotate-12" />
+          <div className="absolute top-1/2 right-1/3 w-10 h-10 rounded-full bg-white/5" />
+          <div className="container mx-auto px-4 relative z-10">
             <div className="flex items-center gap-2 text-white/80 text-sm mb-4">
               <Link href="/" className="hover:text-white">首页</Link>
               <span>/</span>
@@ -140,7 +143,7 @@ export default function UploadPage() {
                     <div
                       className={`flex items-center gap-2 px-3 md:px-4 py-2 rounded-full transition-colors ${
                         currentStep === step.id
-                          ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+                          ? "bg-primary text-white"
                           : currentStep > step.id
                           ? "bg-green-100 text-green-700"
                           : "bg-muted text-muted-foreground"
@@ -166,7 +169,7 @@ export default function UploadPage() {
         {/* Form Content */}
         <div className="container mx-auto px-4 py-8">
           <div className="max-w-2xl mx-auto">
-            <Card className="border-0 shadow-sm">
+            <Card className="border-0">
               <CardContent className="p-6 md:p-8">
                 {/* Step 1: Upload File */}
                 {currentStep === 1 && (
@@ -243,7 +246,7 @@ export default function UploadPage() {
                                 htmlFor={cat.id}
                                 className="flex items-center gap-3 p-4 border rounded-xl cursor-pointer transition-all peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 hover:bg-muted/50"
                               >
-                                <div className={`h-10 w-10 rounded-lg bg-gradient-to-br ${cat.color} flex items-center justify-center`}>
+                                <div className={`h-10 w-10 rounded-lg ${cat.color} flex items-center justify-center`}>
                                   <FileText className="h-5 w-5 text-white" />
                                 </div>
                                 <span className="font-medium">{cat.name}</span>
@@ -302,7 +305,7 @@ export default function UploadPage() {
                             type="button"
                             variant={price === String(p) ? "default" : "outline"}
                             size="sm"
-                            className={`rounded-full ${price === String(p) ? "bg-gradient-to-r from-purple-500 to-pink-500" : ""}`}
+                            className={`rounded-full ${price === String(p) ? "bg-primary" : ""}`}
                             onClick={() => setPrice(String(p))}
                           >
                             ¥{p}
@@ -311,9 +314,9 @@ export default function UploadPage() {
                       </div>
 
                       {/* Earnings Preview */}
-                      <div className="p-6 bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl space-y-4">
+                      <div className="p-6 bg-blue-50 rounded-2xl space-y-4">
                         <div className="flex items-center gap-2">
-                          <Sparkles className="h-5 w-5 text-purple-500" />
+                          <Sparkles className="h-5 w-5 text-primary" />
                           <span className="font-semibold">收益预览</span>
                         </div>
                         <div className="space-y-3">
@@ -325,9 +328,9 @@ export default function UploadPage() {
                             <span className="text-muted-foreground">平台服务费（10%）</span>
                             <span className="text-red-500">-{formatPrice(platformFee)}</span>
                           </div>
-                          <div className="border-t border-purple-200 pt-3 flex justify-between">
+                          <div className="border-t border-blue-200 pt-3 flex justify-between">
                             <span className="font-medium">每笔收益</span>
-                            <span className="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                            <span className="text-xl font-bold text-primary">
                               {formatPrice(earnings)}
                             </span>
                           </div>
@@ -348,7 +351,7 @@ export default function UploadPage() {
                     <div className="space-y-4">
                       {/* File Info */}
                       <div className="p-4 bg-muted/50 rounded-xl flex items-center gap-4">
-                        <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                        <div className="h-12 w-12 rounded-xl bg-primary flex items-center justify-center">
                           <FileText className="h-6 w-6 text-white" />
                         </div>
                         <div className="flex-1 min-w-0">
@@ -367,7 +370,7 @@ export default function UploadPage() {
                         </div>
                         <div className="flex justify-between py-2 border-b">
                           <span className="text-muted-foreground">资料分类</span>
-                          <Badge className="bg-gradient-to-r from-purple-500 to-pink-500">
+                          <Badge className="bg-primary">
                             {categories.find((c) => c.id === category)?.name}
                           </Badge>
                         </div>
@@ -381,7 +384,7 @@ export default function UploadPage() {
                         </div>
                         <div className="flex justify-between py-2 border-b">
                           <span className="text-muted-foreground">定价</span>
-                          <span className="font-bold text-lg bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                          <span className="font-bold text-lg text-primary">
                             {formatPrice(priceNum)}
                           </span>
                         </div>
@@ -419,7 +422,7 @@ export default function UploadPage() {
                       type="button"
                       onClick={handleNext}
                       disabled={!canProceed()}
-                      className="gap-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                      className="gap-2 bg-primary hover:bg-blue-600 transition-all duration-200 hover:scale-105"
                     >
                       下一步
                       <ArrowRight className="h-4 w-4" />
@@ -429,9 +432,9 @@ export default function UploadPage() {
                       type="button"
                       onClick={handleSubmit}
                       disabled={isSubmitting}
-                      className="gap-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                      className="gap-2 bg-primary hover:bg-blue-600 transition-all duration-200 hover:scale-105"
                     >
-                      {isSubmitting ? (
+                      {isSubmitting? (
                         <>
                           <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
                           发布中...

@@ -97,19 +97,19 @@ export default function MaterialDetailPage() {
             {/* Left Column - Material Info */}
             <div className="lg:col-span-2 space-y-6">
               {/* Main Info Card */}
-              <Card className="overflow-hidden border-0 shadow-sm">
+              <Card className="overflow-hidden border-0">
                 <CardContent className="p-0">
                   <div className="flex flex-col md:flex-row">
                     {/* Cover */}
-                    <div className="md:w-64 shrink-0 aspect-[4/3] md:aspect-auto bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center">
-                      <FileText className="h-20 w-20 text-purple-300" />
+                    <div className="md:w-64 shrink-0 aspect-[4/3] md:aspect-auto bg-muted flex items-center justify-center">
+                      <FileText className="h-20 w-20 text-muted-foreground" />
                     </div>
 
                     {/* Info */}
                     <div className="flex-1 p-6 space-y-4">
                       <div className="flex items-start justify-between gap-4">
                         <div className="space-y-2">
-                          <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 border-0">
+                          <Badge className="bg-primary border-0">
                             {getCategoryName(material.category)}
                           </Badge>
                           <h1 className="text-xl md:text-2xl font-bold leading-tight">
@@ -155,7 +155,7 @@ export default function MaterialDetailPage() {
                       {/* File Info */}
                       <div className="flex flex-wrap items-center gap-4 text-sm">
                         <div className="flex items-center gap-2 px-3 py-1.5 bg-muted rounded-full">
-                          <FileIcon className="h-4 w-4 text-purple-500" />
+                          <FileIcon className="h-4 w-4 text-primary" />
                           <span className="uppercase font-medium">{material.fileType}</span>
                         </div>
                         <span className="text-muted-foreground">{material.pageCount} 页</span>
@@ -190,7 +190,7 @@ export default function MaterialDetailPage() {
                 </TabsList>
 
                 <TabsContent value="description" className="mt-6">
-                  <Card className="border-0 shadow-sm">
+                  <Card className="border-0 shadow-none">
                     <CardContent className="p-6">
                       <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
                         {material.description}
@@ -200,7 +200,7 @@ export default function MaterialDetailPage() {
                 </TabsContent>
 
                 <TabsContent value="preview" className="mt-6">
-                  <Card className="border-0 shadow-sm">
+                  <Card className="border-0 shadow-none">
                     <CardContent className="p-6">
                       <div className="space-y-4">
                         <div className="flex items-center justify-between">
@@ -217,7 +217,7 @@ export default function MaterialDetailPage() {
                           {[1, 2, 3].map((page) => (
                             <div
                               key={page}
-                              className="aspect-[4/5] bg-gradient-to-br from-slate-100 to-slate-50 rounded-xl flex items-center justify-center border"
+                              className="aspect-[4/5] bg-muted rounded-lg flex items-center justify-center border"
                             >
                               <div className="text-center text-muted-foreground">
                                 <FileText className="h-12 w-12 mx-auto mb-2 opacity-50" />
@@ -232,7 +232,7 @@ export default function MaterialDetailPage() {
                           </p>
                           <Button
                             onClick={() => setIsPurchaseOpen(true)}
-                            className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                            className="bg-primary hover:bg-blue-600 transition-all duration-200 hover:scale-105"
                           >
                             立即购买查看完整内容
                           </Button>
@@ -243,7 +243,7 @@ export default function MaterialDetailPage() {
                 </TabsContent>
 
                 <TabsContent value="reviews" className="mt-6">
-                  <Card className="border-0 shadow-sm">
+                  <Card className="border-0 shadow-none">
                     <CardContent className="p-6">
                       {materialReviews.length > 0 ? (
                         <div className="space-y-6">
@@ -296,11 +296,11 @@ export default function MaterialDetailPage() {
             {/* Right Column - Purchase Card & Uploader */}
             <div className="space-y-6">
               {/* Purchase Card */}
-              <Card className="border-0 shadow-sm sticky top-24">
+              <Card className="border-0 shadow-none sticky top-24">
                 <CardContent className="p-6 space-y-6">
                   {/* Price */}
                   <div className="text-center">
-                    <span className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                    <span className="text-3xl font-bold text-primary">
                       {formatPrice(material.price)}
                     </span>
                   </div>
@@ -320,7 +320,7 @@ export default function MaterialDetailPage() {
                   ) : (
                     <div className="space-y-3">
                       <Button
-                        className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                        className="w-full bg-primary hover:bg-blue-600 transition-all duration-200 hover:scale-105"
                         size="lg"
                         onClick={() => setIsPurchaseOpen(true)}
                       >
@@ -355,13 +355,13 @@ export default function MaterialDetailPage() {
               </Card>
 
               {/* Uploader Card */}
-              <Card className="border-0 shadow-sm">
+              <Card className="border-0 shadow-none">
                 <CardContent className="p-6">
                   <h3 className="font-semibold mb-4">上传者</h3>
                   <div className="flex items-center gap-3">
                     <Avatar className="h-12 w-12">
                       <AvatarImage src={material.uploaderAvatar} />
-                      <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white">
+                      <AvatarFallback className="bg-primary text-white">
                         {material.uploaderName.charAt(0)}
                       </AvatarFallback>
                     </Avatar>
@@ -384,9 +384,9 @@ export default function MaterialDetailPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                 {relatedMaterials.map((m) => (
                   <Link key={m.id} href={`/materials/${m.id}`}>
-                    <Card className="overflow-hidden border-0 shadow-sm hover:shadow-lg transition-shadow">
-                      <div className="aspect-[4/3] bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center">
-                        <FileText className="h-12 w-12 text-purple-300" />
+                    <Card className="overflow-hidden border-0 transition-all duration-200 hover:scale-[1.02]">
+                      <div className="aspect-[4/3] bg-muted flex items-center justify-center">
+                        <FileText className="h-12 w-12 text-muted-foreground" />
                       </div>
                       <CardContent className="p-4">
                         <h3 className="font-medium text-sm line-clamp-2 mb-2">{m.title}</h3>

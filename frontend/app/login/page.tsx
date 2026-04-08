@@ -11,10 +11,12 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { login, saveToken } from "../../api/auth"
+import { useAuth } from "@/lib/auth-context"
 import { toast } from "sonner"
 
 export default function LoginPage() {
   const router = useRouter()
+  const { refreshUser } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [formData, setFormData] = useState({
@@ -32,6 +34,7 @@ export default function LoginPage() {
         password: formData.password
       })
       saveToken(response.token)
+      await refreshUser()
       toast.success("登录成功")
       router.push("/dashboard")
     } catch (error: any) {
@@ -46,17 +49,14 @@ export default function LoginPage() {
       {/* Left Side - Form */}
       <div className="flex-1 flex items-center justify-center p-4 md:p-8">
         <div className="w-full max-w-md">
-          {/* Logo */}
           <Link href="/" className="flex items-center gap-2 mb-8">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-pink-500">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
               <span className="text-xl font-bold text-white">研</span>
             </div>
-            <span className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-              研料库
-            </span>
+            <span className="text-2xl font-bold text-foreground">研途共享</span>
           </Link>
 
-          <Card className="border-0 shadow-lg">
+          <Card className="border-0">
             <CardHeader className="space-y-1 pb-4">
               <CardTitle className="text-2xl">欢迎回来</CardTitle>
               <CardDescription>登录你的账户继续使用</CardDescription>
@@ -73,7 +73,7 @@ export default function LoginPage() {
                       placeholder="请输入邮箱地址"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="pl-10"
+                      className="pl-10 bg-muted border-0 focus-visible:bg-white focus-visible:border-2 focus-visible:border-primary"
                       required
                     />
                   </div>
@@ -89,7 +89,7 @@ export default function LoginPage() {
                       placeholder="请输入密码"
                       value={formData.password}
                       onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                      className="pl-10 pr-10"
+                      className="pl-10 pr-10 bg-muted border-0 focus-visible:bg-white focus-visible:border-2 focus-visible:border-primary"
                       required
                     />
                     <Button
@@ -126,7 +126,7 @@ export default function LoginPage() {
 
                 <Button
                   type="submit"
-                  className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                  className="w-full h-12 bg-primary hover:bg-blue-600 transition-all duration-200 hover:scale-105 text-base"
                   disabled={isLoading}
                 >
                   {isLoading ? (
@@ -144,15 +144,15 @@ export default function LoginPage() {
                     <Separator className="w-full" />
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-card px-2 text-muted-foreground">或者</span>
+                    <span className="bg-background px-2 text-muted-foreground">或者</span>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
-                  <Button variant="outline" type="button">
+                  <Button variant="outline" type="button" className="border-2">
                     微信登录
                   </Button>
-                  <Button variant="outline" type="button">
+                  <Button variant="outline" type="button" className="border-2">
                     QQ登录
                   </Button>
                 </div>
@@ -169,25 +169,30 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* Right Side - Decorative */}
-      <div className="hidden lg:flex flex-1 bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400 items-center justify-center p-8">
-        <div className="max-w-md text-white text-center">
+      {/* Right Side - Decorative (solid blue, no gradient) */}
+      <div className="hidden lg:flex flex-1 bg-primary items-center justify-center p-8 relative overflow-hidden">
+        {/* Geometric decoration */}
+        <div className="absolute -top-20 -right-20 h-64 w-64 rounded-full bg-white/5" />
+        <div className="absolute -bottom-32 -left-32 h-80 w-80 rounded-full bg-white/5" />
+        <div className="absolute top-1/3 right-1/4 h-40 w-40 rotate-45 bg-white/5 rounded-lg" />
+
+        <div className="max-w-md text-white text-center relative z-10">
           <h2 className="text-3xl font-bold mb-4">考研路上，资料先行</h2>
-          <p className="text-white/90 mb-8">
-            研料库汇聚海量优质考研资料，政治、英语、数学、专业课应有尽有，助你高效备考，一战成硕！
+          <p className="text-white/80 mb-8">
+            研途共享汇聚海量优质考研资料，政治、英语、数学、专业课应有尽有，助你高效备考，一战成硕
           </p>
           <div className="grid grid-cols-3 gap-4 text-center">
-            <div className="p-4 rounded-2xl bg-white/10 backdrop-blur-sm">
+            <div className="p-4 rounded-lg bg-white/10">
               <div className="text-2xl font-bold">9000+</div>
-              <div className="text-sm text-white/80">优质资料</div>
+              <div className="text-sm text-white/70">优质资料</div>
             </div>
-            <div className="p-4 rounded-2xl bg-white/10 backdrop-blur-sm">
+            <div className="p-4 rounded-lg bg-white/10">
               <div className="text-2xl font-bold">50000+</div>
-              <div className="text-sm text-white/80">活跃用户</div>
+              <div className="text-sm text-white/70">活跃用户</div>
             </div>
-            <div className="p-4 rounded-2xl bg-white/10 backdrop-blur-sm">
+            <div className="p-4 rounded-lg bg-white/10">
               <div className="text-2xl font-bold">98%</div>
-              <div className="text-sm text-white/80">好评率</div>
+              <div className="text-sm text-white/70">好评率</div>
             </div>
           </div>
         </div>
