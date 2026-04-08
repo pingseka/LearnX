@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Outfit } from 'next/font/google'
 import './globals.css'
 import { AuthProvider } from '@/lib/auth-context'
+import { Toaster } from '@/components/ui/sonner'
 
 const outfit = Outfit({
   subsets: ['latin'],
@@ -40,6 +41,7 @@ export default function RootLayout({
       <body className={`${outfit.className} antialiased`}>
         <AuthProvider>
           {children}
+          <Toaster richColors position="top-right" />
         </AuthProvider>
       </body>
     </html>

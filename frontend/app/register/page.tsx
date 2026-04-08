@@ -247,7 +247,7 @@ export default function RegisterPage() {
 
                 <Button
                   type="submit"
-                  className="w-full h-12 bg-primary hover:bg-blue-600 transition-all duration-200 hover:scale-105 text-base"
+                  className="w-full h-12 bg-primary hover:bg-blue-600 transition-all duration-200 hover:scale-105 disabled:hover:scale-100 disabled:cursor-not-allowed text-base"
                   disabled={isLoading || !formData.agreeTerms}
                 >
                   {isLoading ? (
@@ -259,6 +259,12 @@ export default function RegisterPage() {
                     "立即注册"
                   )}
                 </Button>
+
+                {!formData.agreeTerms && (
+                  <p className="text-xs text-muted-foreground">
+                    请先勾选并同意用户协议，注册按钮才会启用。
+                  </p>
+                )}
 
                 <div className="relative">
                   <div className="absolute inset-0 flex items-center">
