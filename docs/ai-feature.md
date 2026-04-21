@@ -8,46 +8,75 @@
 
 ### 后端实现
 
-- **服务层**：创建了 `ai.service.ts` 文件，实现与 AI 模型的交互
-- **控制器**：创建了 `ai.controller.ts` 文件，处理 AI 相关的 HTTP 请求
-- **路由**：创建了 `ai.routes.ts` 文件，定义了 API 端点 `/api/ai/chat`
-- **集成**：修改了 `app.ts` 文件，注册了新的 AI 路由
+- **服务层**：`ai.service.ts` — 通过环境变量动态选择 AI 提供商（DeepSeek 或 Ollama）
+- **控制器**：`ai.controller.ts` — 处理 AI 相关的 HTTP 请求及输入校验
+- **路由**：`ai.routes.ts` — 定义了 API 端点 `POST /api/ai/chat`
+- **配置**：`config/env.ts` — 统一读取 `AI_PROVIDER`、`AI_API_KEY`、`AI_BASE_URL`、`AI_MODEL`
 
 ### 前端实现
 
-- **聊天界面**：创建了 `chat/page.tsx` 文件，实现了智能客服聊天界面
-- **主页按钮**：在 `page.tsx` 文件中添加了智能客服按钮
-- **Markdown 解析**：使用 `react-markdown` 库解析和显示 AI 回复的 Markdown 格式内容
+- **聊天界面**：`chat/page.tsx` — 智能客服聊天界面，支持多轮对话
+- **主页入口**：`page.tsx` — 首页智能客服入口按钮
+- **Markdown 渲染**：使用 `react-markdown` 库渲染 AI 回复的富文本内容
 
-## 使用的模型
+## 支持的 AI 提供商
 
-本功能使用了 **Ollama 本地模型**，具体配置如下：
+通过 `.env` 文件切换，无需修改代码。
 
-- **模型名称**：qwen3:8b
-- **API 地址**：http://localhost:11434/v1
-- **API Key**：ollama（Ollama 本地模型不需要实际的 API Key）
+### 方式 1：DeepSeek 云端 API（推荐）
+
+```env
+AI_PROVIDER=deepseek
+AI_API_KEY=sk-xxxxxxxxxxxxxxxx
+AI_BASE_URL=https://api.deepseek.com/v1
+AI_MODEL=deepseek-chat
+```
+
+获取 API Key：[DeepSeek 开放平台](https://platform.deepseek.com/)
+
+### 方式 2：Ollama 本地模型
+
+```env
+AI_PROVIDER=ollama
+AI_BASE_URL=http://localhost:11434/v1
+AI_MODEL=qwen3:8b
+```
+
+需本地安装 Ollama 并执行 `ollama pull qwen3:8b`。
+
+## 环境变量说明
+
+| 变量 | 说明 | DeepSeek 默认值 | Ollama 默认值 |
+|------|------|----------------|--------------|
+| `AI_PROVIDER` | 提供商：`deepseek` 或 `ollama` | `deepseek` | `ollama` |
+| `AI_API_KEY` | API 密钥（DeepSeek 必填） | — | 不需要 |
+| `AI_BASE_URL` | API 基础地址 | `https://api.deepseek.com/v1` | `http://localhost:11434/v1` |
+| `AI_MODEL` | 模型名称 | `deepseek-chat` | `qwen3:8b` |
+
+> ⚠️ `AI_API_KEY` 不得提交到代码仓库，`.env` 文件已在 `.gitignore` 中被忽略。
 
 ## 功能特点
 
-1. **智能问答**：基于上下文的对话能力，能够理解用户的问题并给出专业的回答
+1. **智能问答**：基于上下文的多轮对话，理解考研资料相关问题
 2. **Markdown 支持**：AI 回复支持 Markdown 格式，包括标题、列表、粗体等样式
-3. **实时交互**：前端界面支持实时消息显示和加载状态
-4. **常见问题**：提供了常见问题快捷按钮，方便用户快速提问
-5. **响应式设计**：适配不同屏幕尺寸的设备
-
-## 系统要求
-
-- **后端**：Node.js 环境，安装了 `openai` 包
-- **前端**：Next.js 环境，安装了 `react-markdown` 包
-- **AI 服务**：本地安装并运行 Ollama 服务，下载了 `qwen3:8b` 模型
+3. **实时交互**：前端支持实时消息显示和加载状态
+4. **常见问题**：提供快捷问题按钮，方便用户快速提问
+5. **响应式设计**：适配不同屏幕尺寸
 
 ## 使用流程
 
-1. **启动 Ollama 服务**：确保 Ollama 服务正在运行
-2. **下载模型**：执行 `ollama pull qwen3:8b` 命令下载模型
-3. **启动后端服务**：在 `backend` 目录执行 `npm run dev`
-4. **启动前端服务**：在 `frontend` 目录执行 `npm run dev`
-5. **访问智能客服**：打开浏览器访问 `http://localhost:3000`，点击页面右下角的智能客服按钮
+1. 在 `backend/.env` 中配置 AI 提供商（参考上方环境变量说明）
+2. 启动后端服务：`cd backend && npm run dev`
+3. 启动前端服务：`cd frontend && npm run dev`
+4. 打开浏览器访问 `http://localhost:3000`，点击智能客服按钮
+
+## 示例对话
+
+**用户**：我想学高等数学，买什么资料？
+
+**AI 客服**（节选）：
+> 为考研高等数学准备资料时，建议根据你的学习阶段和目标选择适合的资料……
+
 
 ## 示例对话
 

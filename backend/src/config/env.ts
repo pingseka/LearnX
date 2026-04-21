@@ -25,5 +25,10 @@ export const env = {
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '7d',
   // 文件上传配置
   UPLOAD_DIR: process.env.UPLOAD_DIR || './public/uploads',
-  MAX_FILE_SIZE: parseInt(process.env.MAX_FILE_SIZE || '52428800') // 50MB
+  MAX_FILE_SIZE: parseInt(process.env.MAX_FILE_SIZE || '52428800'), // 50MB
+  // AI 配置
+  AI_PROVIDER: process.env.AI_PROVIDER || 'deepseek',
+  AI_API_KEY: process.env.AI_API_KEY || '',
+  AI_BASE_URL: process.env.AI_BASE_URL || 'https://api.deepseek.com/v1',
+  AI_MODEL: process.env.AI_MODEL || 'deepseek-chat'
 };
