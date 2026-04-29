@@ -2,6 +2,8 @@
 
 > 面向考研学子的考研资料专属付费共享平台
 
+[![CI](https://github.com/shipeng1997/LearnX/actions/workflows/ci.yml/badge.svg)](https://github.com/shipeng1997/LearnX/actions)
+
 ## 团队成员
 
 

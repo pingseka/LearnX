@@ -16,7 +16,7 @@ const config = {
     'lib/**/*.{ts,tsx}',
     'hooks/**/*.{ts,tsx}',
   ],
-
+  coverageReporters: ['lcov', 'text'],
 };
 
 module.exports = config;
