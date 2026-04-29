@@ -2,7 +2,9 @@
 
 > 面向考研学子的考研资料专属付费共享平台
 
-[![CI](https://github.com/shipeng1997/LearnX/actions/workflows/ci.yml/badge.svg)](https://github.com/shipeng1997/LearnX/actions)
+[![CI](https://github.com/xzy111222333/LearnX/actions/workflows/ci.yml/badge.svg)](https://github.com/xzy111222333/LearnX/actions)
+[![Backend Coverage](https://codecov.io/gh/xzy111222333/LearnX/branch/main/graph/badge.svg?flag=backend)](https://codecov.io/gh/xzy111222333/LearnX)
+[![Frontend Coverage](https://codecov.io/gh/xzy111222333/LearnX/branch/main/graph/badge.svg?flag=frontend)](https://codecov.io/gh/xzy111222333/LearnX)
 
 ## 团队成员
 
