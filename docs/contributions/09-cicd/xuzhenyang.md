@@ -10,7 +10,7 @@
 - [x] 将 CI 拆分为 backend / frontend 两个并行 job
 - [x] 为 backend job 增加 lint、coverage 测试和 Codecov 上传
 - [x] 为 frontend job 保留 lint、coverage 测试并增加 Codecov 上传
-- [x] 修正 README 状态徽章仓库地址为 `xzy111222333/LearnX`
+- [x] 修正 README 状态徽章仓库地址为当前正式仓库 `pingseka/LearnX`
 - [x] 添加 README 后端 / 前端覆盖率徽章
 
 ### 代码适配
@@ -51,14 +51,14 @@
 
 ## CI 运行链接
 
-- https://github.com/xzy111222333/LearnX/actions
+- https://github.com/pingseka/LearnX/actions/runs/25096285928
 
 ## 遇到的问题和解决
 
 1. 问题：GitHub Actions 页面显示 `The job was not started because your account is locked due to a billing issue.`  
-   解决：该问题是 GitHub 账号 / Billing 状态导致 job 没有启动，不是 CI YAML 或测试代码报错；需要仓库所有者进入 GitHub Billing / Actions 设置处理账号锁定后重新运行工作流。
+   解决：确认该问题是原仓库所有者账号的 Billing 状态导致 job 未启动，不是 CI YAML 或测试代码报错；后续将仓库转移到可正常运行 Actions 的账号 `pingseka`，并重新触发 CI，backend 和 frontend 两个 job 均已通过。
 2. 问题：README 中 CI 徽章指向 `shipeng1997/LearnX`，与当前仓库不一致。  
-   解决：改为 `xzy111222333/LearnX`，并补充 backend / frontend 两个 Codecov flag 徽章。
+   解决：改为当前正式仓库 `pingseka/LearnX`，并补充 backend / frontend 两个 Codecov flag 徽章。
 3. 问题：后端 `npm run lint` 缺少 ESLint 配置，CI 中无法运行 lint。  
    解决：新增 `backend/.eslintrc.cjs`，配置 TypeScript parser、Jest 环境和 CI 可用的规则。
 4. 问题：前端 `eslint.config.js` 在 Node 环境下出现模块类型警告。  
@@ -67,3 +67,5 @@
 ## 心得体会
 
 这次 CI/CD 配置让我更直观地理解了“本地可运行”和“CI 可运行”的差异。CI 不只是在服务器上跑测试，还要求依赖安装、Lint、覆盖率文件路径、徽章链接和外部服务配置都一致。尤其是 GitHub Actions 因账号 Billing 状态无法启动时，需要先判断是不是代码问题，避免在 YAML 上做无效修改。
+
+说明：仓库所有权已转移到 `pingseka/LearnX` 以保证 GitHub Actions 正常运行；本人相关提交仍使用 `xzy111222333` 作为 Git author，可通过 `git log --author="xzy111222333" --oneline` 查看。
