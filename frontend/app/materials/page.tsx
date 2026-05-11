@@ -35,6 +35,7 @@ function MaterialsContent() {
 
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState<Category | "all">(initialCategory || "all")
+  const [onlyFree, setOnlyFree] = useState(false)
   const [sortBy, setSortBy] = useState<"popular" | "newest" | "price-low" | "price-high">('popular')
   const [priceRange, setPriceRange] = useState([0, 100])
   const [materials, setMaterials] = useState<Material[]>([])
@@ -62,6 +63,10 @@ function MaterialsContent() {
     // Filter by category
     if (selectedCategory !== "all") {
       filtered = filtered.filter((m) => m.category === selectedCategory)
+    }
+
+    if (onlyFree) {
+      filtered = filtered.filter((m) => Number(m.price) === 0)
     }
 
     // Filter by search query
@@ -95,7 +100,7 @@ function MaterialsContent() {
     }
 
     return filtered
-  }, [searchQuery, selectedCategory, sortBy, priceRange])
+  }, [searchQuery, selectedCategory, onlyFree, sortBy, priceRange])
 
   const FilterContent = () => (
     <div className="space-y-6">
@@ -128,6 +133,30 @@ function MaterialsContent() {
               {cat.name}
             </Badge>
           ))}
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        <h4 className="font-medium">价格类型</h4>
+        <div className="flex flex-wrap gap-2">
+          <Badge
+            variant={!onlyFree ? "default" : "outline"}
+            className={`cursor-pointer transition-all ${
+              !onlyFree ? "bg-primary hover:bg-blue-600" : "hover:bg-muted"
+            }`}
+            onClick={() => setOnlyFree(false)}
+          >
+            全部资料
+          </Badge>
+          <Badge
+            variant={onlyFree ? "default" : "outline"}
+            className={`cursor-pointer transition-all ${
+              onlyFree ? "bg-primary hover:bg-blue-600" : "hover:bg-muted"
+            }`}
+            onClick={() => setOnlyFree(true)}
+          >
+            免费资料
+          </Badge>
         </div>
       </div>
 
@@ -251,6 +280,13 @@ function MaterialsContent() {
                 >
                   全部
                 </Badge>
+                <Badge
+                  variant={onlyFree ? "default" : "outline"}
+                  className={`cursor-pointer ${onlyFree ? "bg-primary" : ""}`}
+                  onClick={() => setOnlyFree(!onlyFree)}
+                >
+                  免费资料
+                </Badge>
                 {categories.map((cat) => (
                   <Badge
                     key={cat.id}
@@ -313,6 +349,7 @@ function MaterialsContent() {
                       onClick={() => {
                         setSearchQuery("")
                         setSelectedCategory("all")
+                        setOnlyFree(false)
                         setPriceRange([0, 100])
                       }}
                     >

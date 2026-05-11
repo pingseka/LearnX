@@ -81,6 +81,7 @@ export const materialsService = {
 
     const { count, rows } = await Material.findAndCountAll({
       where,
+      distinct: true,
       include: [
         { model: User, as: 'author', attributes: ['id', 'name', 'email'] },
         { model: Tag, as: 'tags', attributes: ['id', 'name'] }
@@ -122,6 +123,7 @@ export const materialsService = {
   getByAuthor: async (authorId: string, page: number = 1, limit: number = 10) => {
     const { count, rows } = await Material.findAndCountAll({
       where: { authorId: Number(authorId) },
+      distinct: true,
       include: [
         { model: Tag, as: 'tags', attributes: ['id', 'name'] }
       ],
@@ -142,6 +144,7 @@ export const materialsService = {
   getPendingReview: async (page: number = 1, limit: number = 20) => {
     const { count, rows } = await Material.findAndCountAll({
       where: { status: 'pending' },
+      distinct: true,
       include: [
         { model: User, as: 'author', attributes: ['id', 'name', 'email'] },
         { model: Tag, as: 'tags', attributes: ['id', 'name'] }
