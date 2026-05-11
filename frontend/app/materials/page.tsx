@@ -26,8 +26,8 @@ import { Slider } from "@/components/ui/slider"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { MaterialCard } from "@/components/material-card"
-import { getMaterials } from "@/api/materials"
-import { materials as mockMaterials, categories, type Category } from "@/lib/mock-data"
+import { getMaterials, type Material } from "@/api/materials"
+import { categories, type Category } from "@/lib/mock-data"
 
 function MaterialsContent() {
   const searchParams = useSearchParams()
@@ -37,18 +37,18 @@ function MaterialsContent() {
   const [selectedCategory, setSelectedCategory] = useState<Category | "all">(initialCategory || "all")
   const [sortBy, setSortBy] = useState<"popular" | "newest" | "price-low" | "price-high">('popular')
   const [priceRange, setPriceRange] = useState([0, 100])
-  const [materials, setMaterials] = useState(mockMaterials)
+  const [materials, setMaterials] = useState<Material[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState("")
 
   useEffect(() => {
     async function fetchData() {
       try {
         const result = await getMaterials()
-        if (result?.materials?.length > 0) {
-          // API data would need mapping; for now keep mock
-        }
-      } catch {
-        // Keep mock data as fallback
+        setMaterials(result?.materials || [])
+        setLoadError("")
+      } catch (err) {
+        setLoadError(err instanceof Error ? err.message : "资料加载失败")
       } finally {
         setLoading(false)
       }
@@ -71,7 +71,7 @@ function MaterialsContent() {
         (m) =>
           m.title.toLowerCase().includes(query) ||
           m.description.toLowerCase().includes(query) ||
-          m.tags.some((tag) => tag.toLowerCase().includes(query))
+          m.tags.some((tag) => tag.name.toLowerCase().includes(query))
       )
     }
 
@@ -81,7 +81,7 @@ function MaterialsContent() {
     // Sort
     switch (sortBy) {
       case "popular":
-        filtered.sort((a, b) => b.salesCount - a.salesCount)
+        filtered.sort((a, b) => b.id - a.id)
         break
       case "newest":
         filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
@@ -273,6 +273,21 @@ function MaterialsContent() {
                   {[...Array(6)].map((_, i) => (
                     <Skeleton key={i} className="h-64 rounded-lg" />
                   ))}
+                </div>
+              ) : loadError ? (
+                <div className="rounded-lg border bg-white p-8 text-center">
+                  <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-lg bg-red-50">
+                    <Search className="h-8 w-8 text-red-500" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-slate-950">
+                    资料加载失败
+                  </h3>
+                  <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-600">
+                    {loadError}
+                  </p>
+                  <Button className="mt-6" onClick={() => window.location.reload()}>
+                    重新加载
+                  </Button>
                 </div>
               ) : filteredMaterials.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">

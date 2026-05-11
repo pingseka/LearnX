@@ -4,23 +4,57 @@ import Link from "next/link"
 import { Star, Eye } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { type Material, getCategoryName, formatPrice } from "@/lib/mock-data"
+import { getCategoryName, formatPrice } from "@/lib/mock-data"
 import { MaterialCover } from "@/components/material-cover"
 
+interface MaterialCardData {
+  id: number | string
+  title: string
+  description?: string
+  price: number
+  category: string
+  fileType?: string
+  fileUrl?: string
+  rating?: number
+  reviewCount?: number
+  salesCount?: number
+  uploaderName?: string
+  author?: {
+    name?: string
+    username?: string
+    email?: string
+  }
+  tags?: Array<string | { id: number; name: string }>
+}
+
 interface MaterialCardProps {
-  material: Material
+  material: MaterialCardData
 }
 
 export function MaterialCard({ material }: MaterialCardProps) {
+  const fileType =
+    material.fileType ||
+    material.fileUrl?.split("?")[0].split(".").pop()?.toUpperCase() ||
+    "PDF"
+  const tags = (material.tags || []).map((tag) =>
+    typeof tag === "string" ? tag : tag.name
+  )
+  const uploaderName =
+    material.uploaderName ||
+    material.author?.name ||
+    material.author?.username ||
+    material.author?.email ||
+    "资料作者"
+
   return (
     <Link href={`/materials/${material.id}`}>
       <Card className="group overflow-hidden border-0 shadow-none bg-white rounded-lg hover:scale-[1.02] transition-all duration-200 w-full">
         {/* Cover */}
         <div className="relative aspect-[4/3] overflow-hidden bg-muted">
-          <MaterialCover
-            title={material.title}
-            category={material.category}
-            fileType={material.fileType}
+            <MaterialCover
+              title={material.title}
+              category={material.category}
+            fileType={fileType}
             className="h-full rounded-none border-0"
           />
           {/* Overlay on hover - 仅桌面端 */}
@@ -39,7 +73,7 @@ export function MaterialCard({ material }: MaterialCardProps) {
           <Badge
             className="absolute top-2 right-2 sm:top-3 sm:right-3 uppercase bg-primary text-white border-0 text-[10px] sm:text-xs px-1.5 sm:px-2"
           >
-            {material.fileType}
+            {fileType}
           </Badge>
         </div>
 
@@ -51,7 +85,7 @@ export function MaterialCard({ material }: MaterialCardProps) {
 
           {/* Tags - 移动端只显示2个 */}
           <div className="flex flex-wrap gap-1 sm:gap-1.5">
-            {material.tags.slice(0, 2).map((tag) => (
+            {tags.slice(0, 2).map((tag) => (
               <Badge
                 key={tag}
                 variant="outline"
@@ -60,12 +94,12 @@ export function MaterialCard({ material }: MaterialCardProps) {
                 {tag}
               </Badge>
             ))}
-            {material.tags.length > 2 && (
+            {tags.length > 2 && (
               <Badge
                 variant="outline"
                 className="hidden sm:inline-flex text-xs px-2 py-0 h-5 bg-muted border-transparent text-muted-foreground"
               >
-                {material.tags[2]}
+                {tags[2]}
               </Badge>
             )}
           </div>
@@ -74,10 +108,10 @@ export function MaterialCard({ material }: MaterialCardProps) {
           <div className="flex items-center justify-between text-[10px] sm:text-xs text-muted-foreground">
             <div className="flex items-center gap-0.5 sm:gap-1">
               <Star className="h-3 w-3 sm:h-3.5 sm:w-3.5 fill-amber-400 text-amber-400" />
-              <span className="font-medium text-foreground">{material.rating}</span>
-              <span className="hidden sm:inline">({material.reviewCount})</span>
+              <span className="font-medium text-foreground">{material.rating || "5.0"}</span>
+              <span className="hidden sm:inline">({material.reviewCount || 0})</span>
             </div>
-            <span>{material.salesCount} 人购买</span>
+            <span>{material.salesCount || 0} 人购买</span>
           </div>
 
           {/* Price & Uploader */}
@@ -86,7 +120,7 @@ export function MaterialCard({ material }: MaterialCardProps) {
               {formatPrice(material.price)}
             </span>
             <span className="text-[10px] sm:text-xs text-muted-foreground truncate max-w-[60px] sm:max-w-[100px]">
-              {material.uploaderName}
+              {uploaderName}
             </span>
           </div>
         </CardContent>

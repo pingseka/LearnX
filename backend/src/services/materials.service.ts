@@ -100,7 +100,12 @@ export const materialsService = {
   },
 
   getById: async (id: string) => {
-    const material = await Material.findByPk(Number(id), {
+    const materialId = Number(id);
+    if (!Number.isInteger(materialId) || materialId <= 0) {
+      throw new Error('资料编号无效');
+    }
+
+    const material = await Material.findByPk(materialId, {
       include: [
         { model: User, as: 'author', attributes: ['id', 'name', 'email'] },
         { model: Tag, as: 'tags', attributes: ['id', 'name'] }
@@ -156,7 +161,12 @@ export const materialsService = {
   },
 
   review: async (id: string, status: 'approved' | 'rejected') => {
-    const material = await Material.findByPk(Number(id));
+    const materialId = Number(id);
+    if (!Number.isInteger(materialId) || materialId <= 0) {
+      throw new Error('资料编号无效');
+    }
+
+    const material = await Material.findByPk(materialId);
     if (!material) {
       throw new Error('素材不存在');
     }
@@ -172,7 +182,12 @@ export const materialsService = {
   },
 
   update: async (id: string, data: UpdateMaterialData, authorId: string) => {
-    const material = await Material.findByPk(Number(id));
+    const materialId = Number(id);
+    if (!Number.isInteger(materialId) || materialId <= 0) {
+      throw new Error('资料编号无效');
+    }
+
+    const material = await Material.findByPk(materialId);
     if (!material) {
       throw new Error('素材不存在');
     }
@@ -222,7 +237,12 @@ export const materialsService = {
   },
 
   delete: async (id: string, authorId: string) => {
-    const material = await Material.findByPk(Number(id));
+    const materialId = Number(id);
+    if (!Number.isInteger(materialId) || materialId <= 0) {
+      throw new Error('资料编号无效');
+    }
+
+    const material = await Material.findByPk(materialId);
     if (!material) {
       throw new Error('素材不存在');
     }
