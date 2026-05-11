@@ -28,7 +28,7 @@ import {
   formatPrice,
   getCategoryName,
   type Category,
-} from "@/lib/mock-data"
+} from "@/lib/catalog"
 
 const statusConfig = {
   pending: {

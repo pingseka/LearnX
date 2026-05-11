@@ -1,6 +1,8 @@
 import { Earnings } from '../models/earnings.model';
 import { Op } from 'sequelize';
-import { Order } from '../models/order.model';
+import { Order, OrderItem } from '../models/order.model';
+import { Material } from '../models/material.model';
+import { User } from '../models/user.model';
 
 interface EarningsStats {
   total: number;
@@ -60,7 +62,31 @@ export const earningsService = {
   getDetails: async (userId: string, page: number = 1, limit: number = 10) => {
     const { count, rows } = await Earnings.findAndCountAll({
       where: { userId: Number(userId) },
-      include: [{ model: Order, as: 'order', attributes: ['id', 'totalAmount', 'status'] }],
+      include: [
+        {
+          model: Order,
+          as: 'order',
+          attributes: ['id', 'buyerId', 'totalAmount', 'status', 'createdAt'],
+          include: [
+            {
+              model: User,
+              as: 'buyer',
+              attributes: ['id', 'name', 'email']
+            },
+            {
+              model: OrderItem,
+              as: 'items',
+              include: [
+                {
+                  model: Material,
+                  as: 'material',
+                  attributes: ['id', 'title', 'price', 'fileUrl']
+                }
+              ]
+            }
+          ]
+        }
+      ],
       limit,
       offset: (page - 1) * limit,
       order: [['createdAt', 'DESC']]

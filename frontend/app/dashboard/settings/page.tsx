@@ -1,18 +1,17 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { User, Mail, Phone, Lock, CreditCard, Bell, Check, Loader2 } from "lucide-react"
+import { User, Mail, Lock, CreditCard, Bell, Check, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
 import { getProfile } from "@/api/auth"
 import { useAuth } from "@/lib/auth-context"
-import { currentUser } from "@/lib/mock-data"
 
 export default function SettingsPage() {
   const { user } = useAuth()
@@ -21,9 +20,8 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true)
 
   const [formData, setFormData] = useState({
-    name: currentUser.name,
-    email: currentUser.email,
-    phone: "138****8888",
+    name: user?.name || "",
+    email: user?.email || "",
   })
 
   useEffect(() => {
@@ -33,14 +31,12 @@ export default function SettingsPage() {
         setFormData({
           name: profile.name,
           email: profile.email,
-          phone: "138****8888",
         })
       } catch {
         if (user) {
           setFormData({
             name: user.name,
             email: user.email,
-            phone: "138****8888",
           })
         }
       } finally {
@@ -59,10 +55,9 @@ export default function SettingsPage() {
 
   const handleSave = async () => {
     setIsSaving(true)
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    await new Promise((resolve) => setTimeout(resolve, 300))
     setIsSaving(false)
-    setSaveSuccess(true)
-    setTimeout(() => setSaveSuccess(false), 2000)
+    setSaveSuccess(false)
   }
 
   return (
@@ -96,10 +91,10 @@ export default function SettingsPage() {
               </AvatarFallback>
             </Avatar>
             <div>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" disabled>
                 更换头像
               </Button>
-              <p className="text-xs text-muted-foreground mt-2">支持 JPG、PNG 格式，最大 2MB</p>
+              <p className="text-xs text-muted-foreground mt-2">暂未接入头像上传接口</p>
             </div>
           </div>
 
@@ -117,6 +112,7 @@ export default function SettingsPage() {
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="请输入昵称"
+                readOnly
               />
             </div>
 
@@ -131,25 +127,13 @@ export default function SettingsPage() {
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 placeholder="请输入邮箱"
+                readOnly
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="phone" className="flex items-center gap-2">
-                <Phone className="h-4 w-4" />
-                手机号
-              </Label>
-              <div className="flex gap-2">
-                <Input
-                  id="phone"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  placeholder="请输入手机号"
-                  className="flex-1"
-                />
-                <Button variant="outline">更换</Button>
-              </div>
-            </div>
+            <p className="rounded-lg bg-blue-50 p-3 text-sm leading-6 text-blue-700">
+              当前后端只保存昵称和邮箱。手机号、头像上传等资料完善功能后续接入真实接口后再开放。
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -168,10 +152,10 @@ export default function SettingsPage() {
               </div>
               <div>
                 <p className="font-medium">登录密码</p>
-                <p className="text-sm text-muted-foreground">上次修改: 30 天前</p>
+                <p className="text-sm text-muted-foreground">暂未接入修改密码接口</p>
               </div>
             </div>
-            <Button variant="outline">修改密码</Button>
+            <Button variant="outline" disabled>修改密码</Button>
           </div>
         </CardContent>
       </Card>
@@ -189,11 +173,13 @@ export default function SettingsPage() {
                 <CreditCard className="h-5 w-5 text-blue-600" />
               </div>
               <div>
-                <p className="font-medium">银行卡</p>
-                <p className="text-sm text-muted-foreground">工商银行 尾号 8888</p>
+                <p className="font-medium">收款账户</p>
+                <p className="text-sm text-muted-foreground">
+                  沙盒项目不保存真实银行卡或第三方收款账号
+                </p>
               </div>
             </div>
-            <Button variant="outline">更换</Button>
+            <Button variant="outline" disabled>暂不支持</Button>
           </div>
         </CardContent>
       </Card>
@@ -279,7 +265,7 @@ export default function SettingsPage() {
         )}
         <Button
           onClick={handleSave}
-          disabled={isSaving}
+          disabled
           className="bg-primary hover:bg-blue-600 transition-all duration-200 hover:scale-105"
         >
           {isSaving ? (
@@ -288,7 +274,7 @@ export default function SettingsPage() {
               保存中...
             </>
           ) : (
-            "保存设置"
+            "暂未开放保存"
           )}
         </Button>
       </div>

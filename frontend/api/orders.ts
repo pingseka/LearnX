@@ -10,6 +10,11 @@ export interface OrderItem {
     title: string;
     price: number;
     fileUrl: string;
+    author?: {
+      id: number;
+      name?: string;
+      email?: string;
+    };
   };
   quantity: number;
   price: number;
@@ -18,9 +23,10 @@ export interface OrderItem {
 export interface Order {
   id: number;
   buyerId: number;
-  buyer: {
+  buyer?: {
     id: number;
-    username: string;
+    name?: string;
+    email?: string;
   };
   totalAmount: number;
   status: 'pending' | 'completed' | 'cancelled';
@@ -30,7 +36,7 @@ export interface Order {
 }
 
 export interface CreateOrderData {
-  items: {
+  materials: {
     materialId: number;
     quantity: number;
   }[];

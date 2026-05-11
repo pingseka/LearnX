@@ -31,7 +31,7 @@ import { FileUpload } from "@/components/file-upload"
 import { Footer } from "@/components/layout/footer"
 import { Header } from "@/components/layout/header"
 import { MaterialCover } from "@/components/material-cover"
-import { categories, formatPrice, type Category } from "@/lib/mock-data"
+import { categories, formatPrice, type Category } from "@/lib/catalog"
 
 const publishSteps = [
   { id: 1, name: "文件", description: "上传资料原件" },

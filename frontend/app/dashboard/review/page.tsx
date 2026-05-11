@@ -23,7 +23,7 @@ import {
   formatPrice,
   getCategoryName,
   type Category,
-} from "@/lib/mock-data"
+} from "@/lib/catalog"
 
 function asCategory(category: string): Category {
   if (

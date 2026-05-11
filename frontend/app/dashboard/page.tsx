@@ -16,43 +16,66 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { StatsCard } from "@/components/stats-card"
 import { useAuth } from "@/lib/auth-context"
 import { getProfile } from "@/api/auth"
-import { getMyMaterials } from "@/api/materials"
-import { getOrders } from "@/api/orders"
-import { getEarningsDetails } from "@/api/earnings"
+import { getMyMaterials, type Material } from "@/api/materials"
+import { getOrders, type Order } from "@/api/orders"
 import {
-  currentUser,
-  userMaterials,
-  userOrders,
-  userEarnings,
-  formatPrice,
-  formatDate,
-  type Earning,
-} from "@/lib/mock-data"
+  getEarningsDetails,
+  getEarningsStats,
+  type EarningsDetail,
+} from "@/api/earnings"
+import { formatCurrency, formatDate, formatPrice } from "@/lib/catalog"
+
+function getOrderMaterial(order: Order) {
+  return order.items?.[0]?.material
+}
+
+function getEarningMaterialTitle(earning: EarningsDetail) {
+  return (
+    earning.order?.items?.[0]?.material?.title ||
+    `订单 #${earning.orderId}`
+  )
+}
+
+function getEarningBuyerName(earning: EarningsDetail) {
+  return (
+    earning.order?.buyer?.name ||
+    earning.order?.buyer?.email ||
+    "购买用户"
+  )
+}
 
 export default function DashboardPage() {
   const { user } = useAuth()
   const [loading, setLoading] = useState(true)
-  const [userName, setUserName] = useState(currentUser.name)
-  const [balance, setBalance] = useState(currentUser.balance)
-  const [totalEarningsAmount, setTotalEarningsAmount] = useState(currentUser.totalEarnings)
-  const [materialsList, setMaterialsList] = useState(userMaterials)
-  const [ordersList, setOrdersList] = useState(userOrders)
-  const [earningsList, setEarningsList] = useState<Earning[]>(userEarnings)
+  const [userName, setUserName] = useState(user?.name || "用户")
+  const [balance, setBalance] = useState(0)
+  const [totalEarningsAmount, setTotalEarningsAmount] = useState(0)
+  const [materialsList, setMaterialsList] = useState<Material[]>([])
+  const [ordersList, setOrdersList] = useState<Order[]>([])
+  const [earningsList, setEarningsList] = useState<EarningsDetail[]>([])
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const [profileRes, materialsRes, ordersRes, earningsRes] = await Promise.allSettled([
+        const [
+          profile,
+          materialsRes,
+          ordersRes,
+          earningsRes,
+          statsRes,
+        ] = await Promise.all([
           getProfile(),
           getMyMaterials(),
           getOrders(),
           getEarningsDetails(),
+          getEarningsStats(),
         ])
-        if (profileRes.status === 'fulfilled' && profileRes.value) {
-          setUserName(profileRes.value.name)
-        } else if (user?.name) {
-          setUserName(user.name)
-        }
+        setUserName(profile.name)
+        setMaterialsList(materialsRes.materials || [])
+        setOrdersList(ordersRes.orders || [])
+        setEarningsList(earningsRes.earnings || [])
+        setBalance(statsRes.total || 0)
+        setTotalEarningsAmount(statsRes.total || 0)
       } catch {
         if (user?.name) setUserName(user.name)
       } finally {
@@ -62,9 +85,11 @@ export default function DashboardPage() {
     fetchData()
   }, [user])
 
-  const totalEarnings = earningsList.reduce((sum, e) => sum + e.netAmount, 0)
   const recentEarnings = earningsList.slice(0, 5)
   const recentOrders = ordersList.slice(0, 3)
+  const completedOrdersCount = ordersList.filter(
+    (order) => order.status === "completed"
+  ).length
 
   if (loading) {
     return (
@@ -103,28 +128,28 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatsCard
           title="账户余额"
-          value={formatPrice(balance)}
+          value={formatCurrency(balance)}
           description="可提现金额"
           icon={Wallet}
           color="bg-blue-500"
         />
         <StatsCard
           title="累计收益"
-          value={formatPrice(totalEarningsAmount)}
+          value={formatCurrency(totalEarningsAmount)}
           icon={TrendingUp}
-          trend={{ value: 12.5, isPositive: true }}
+          description="沙盒订单收益"
           color="bg-emerald-500"
         />
         <StatsCard
           title="我的资料"
           value={`${materialsList.length} 份`}
-          description={`总销量 ${materialsList.reduce((sum, m) => sum + m.salesCount, 0)} 份`}
+          description="已上传资料"
           icon={FileText}
           color="bg-amber-500"
         />
         <StatsCard
           title="购买订单"
-          value={`${ordersList.length} 笔`}
+          value={`${completedOrdersCount} 笔`}
           description="已完成订单"
           icon={ShoppingBag}
           color="bg-red-500"
@@ -150,13 +175,15 @@ export default function DashboardPage() {
                 {recentEarnings.map((earning) => (
                   <div key={earning.id} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm truncate">{earning.materialTitle}</p>
+                      <p className="font-medium text-sm truncate">
+                        {getEarningMaterialTitle(earning)}
+                      </p>
                       <p className="text-xs text-muted-foreground">
-                        {earning.buyerName} 购买 · {formatDate(earning.createdAt)}
+                        {getEarningBuyerName(earning)} 购买 · {formatDate(earning.createdAt)}
                       </p>
                     </div>
                     <span className="font-semibold text-green-600 shrink-0 ml-4">
-                      +{formatPrice(earning.netAmount)}
+                      +{formatCurrency(earning.amount)}
                     </span>
                   </div>
                 ))}
@@ -183,18 +210,26 @@ export default function DashboardPage() {
           <CardContent>
             {recentOrders.length > 0 ? (
               <div className="space-y-4">
-                {recentOrders.map((order) => (
-                  <div key={order.id} className="flex items-center gap-4 py-2 border-b border-border/50 last:border-0">
-                    <div className="h-12 w-12 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
-                      <FileText className="h-6 w-6 text-primary" />
+                {recentOrders.map((order) => {
+                  const material = getOrderMaterial(order)
+
+                  return (
+                    <div key={order.id} className="flex items-center gap-4 py-2 border-b border-border/50 last:border-0">
+                      <div className="h-12 w-12 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+                        <FileText className="h-6 w-6 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm truncate">
+                          {material?.title || `订单 #${order.id}`}
+                        </p>
+                        <p className="text-xs text-muted-foreground">{formatDate(order.createdAt)}</p>
+                      </div>
+                      <span className="font-semibold shrink-0">
+                        {formatPrice(order.totalAmount)}
+                      </span>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm truncate">{order.materialTitle}</p>
-                      <p className="text-xs text-muted-foreground">{formatDate(order.createdAt)}</p>
-                    </div>
-                    <span className="font-semibold shrink-0">{formatPrice(order.price)}</span>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             ) : (
               <div className="text-center py-8 text-muted-foreground">

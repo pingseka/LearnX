@@ -27,7 +27,7 @@ import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { MaterialCard } from "@/components/material-card"
 import { getMaterials, type Material } from "@/api/materials"
-import { categories, type Category } from "@/lib/mock-data"
+import { categories, type Category } from "@/lib/catalog"
 
 function MaterialsContent() {
   const searchParams = useSearchParams()
@@ -81,7 +81,10 @@ function MaterialsContent() {
     }
 
     // Filter by price range
-    filtered = filtered.filter((m) => m.price >= priceRange[0] && m.price <= priceRange[1])
+    filtered = filtered.filter((m) => {
+      const price = Number(m.price)
+      return price >= priceRange[0] && price <= priceRange[1]
+    })
 
     // Sort
     switch (sortBy) {
@@ -92,10 +95,10 @@ function MaterialsContent() {
         filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
         break
       case "price-low":
-        filtered.sort((a, b) => a.price - b.price)
+        filtered.sort((a, b) => Number(a.price) - Number(b.price))
         break
       case "price-high":
-        filtered.sort((a, b) => b.price - a.price)
+        filtered.sort((a, b) => Number(b.price) - Number(a.price))
         break
     }
 

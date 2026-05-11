@@ -109,6 +109,8 @@ export default function MaterialDetailPage() {
     () => getAssetUrl(material?.fileUrl),
     [material?.fileUrl]
   );
+  const isFree = Number(material?.price || 0) === 0;
+  const canAccessFile = isFree || isPurchased;
 
   const authorName =
     material?.author?.name || material?.author?.username || material?.author?.email || '资料作者';
@@ -284,7 +286,7 @@ export default function MaterialDetailPage() {
                             PDF 可直接预览，Word 文件需要下载后查看。
                           </p>
                         </div>
-                        {fileUrl && (
+                        {fileUrl && canAccessFile && (
                           <div className="flex gap-2">
                             <Button variant="outline" size="sm" asChild>
                               <a href={fileUrl} target="_blank" rel="noreferrer">
@@ -302,7 +304,22 @@ export default function MaterialDetailPage() {
                         )}
                       </div>
 
-                      {fileUrl && isPdf(material.fileUrl) ? (
+                      {!canAccessFile ? (
+                        <div className="flex min-h-[360px] flex-col items-center justify-center rounded-lg border bg-muted/40 px-6 text-center">
+                          <FileText className="mb-4 h-14 w-14 text-muted-foreground" />
+                          <h3 className="text-lg font-semibold">购买后可查看完整文件</h3>
+                          <p className="mt-2 max-w-md text-sm text-muted-foreground">
+                            当前资料为付费资料。完成沙盒购买后，页面会开放 PDF 预览和原文件下载。
+                          </p>
+                          <Button
+                            className="mt-5"
+                            onClick={() => setIsPurchaseOpen(true)}
+                          >
+                            <ShoppingCart className="mr-2 h-4 w-4" />
+                            购买后查看
+                          </Button>
+                        </div>
+                      ) : fileUrl && isPdf(material.fileUrl) ? (
                         <div className="overflow-hidden rounded-lg border bg-muted">
                           <iframe
                             src={`${fileUrl}#toolbar=1&navpanes=0`}
@@ -354,7 +371,30 @@ export default function MaterialDetailPage() {
                     </div>
                   </div>
 
-                  {isPurchased ? (
+                  {isFree ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 rounded-lg bg-green-50 px-3 py-2 text-green-700">
+                        <CheckCircle2 className="h-5 w-5" />
+                        免费资料，可直接查看和下载
+                      </div>
+                      {fileUrl && (
+                        <div className="grid gap-2">
+                          <Button className="w-full" asChild>
+                            <a href={fileUrl} target="_blank" rel="noreferrer">
+                              <Eye className="mr-2 h-4 w-4" />
+                              立即查看
+                            </a>
+                          </Button>
+                          <Button variant="outline" className="w-full" asChild>
+                            <a href={fileUrl} download>
+                              <Download className="mr-2 h-4 w-4" />
+                              免费下载
+                            </a>
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  ) : isPurchased ? (
                     <div className="space-y-3">
                       <div className="flex items-center gap-2 rounded-lg bg-green-50 px-3 py-2 text-green-700">
                         <CheckCircle2 className="h-5 w-5" />
@@ -391,7 +431,7 @@ export default function MaterialDetailPage() {
                   <div className="space-y-3 text-sm text-muted-foreground">
                     <div className="flex items-center gap-2">
                       <CheckCircle2 className="h-4 w-4 text-green-500" />
-                      购买后可下载原文件
+                      {isFree ? '免费资料可直接下载原文件' : '购买后可下载原文件'}
                     </div>
                     <div className="flex items-center gap-2">
                       <CheckCircle2 className="h-4 w-4 text-green-500" />

@@ -39,13 +39,16 @@ describe('materialsService getAll', () => {
 
     const result = await materialsService.getAll(1, 2);
 
-    expect(Material.findAndCountAll).toHaveBeenCalledWith({
-      where: {},
-      include: expect.any(Array),
-      limit: 2,
-      offset: 0,
-      order: [['createdAt', 'DESC']]
-    });
+    expect(Material.findAndCountAll).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { status: 'approved' },
+        include: expect.any(Array),
+        distinct: true,
+        limit: 2,
+        offset: 0,
+        order: [['createdAt', 'DESC']]
+      })
+    );
     expect(result.materials).toHaveLength(2);
     expect(result.total).toBe(10);
     expect(result.page).toBe(1);

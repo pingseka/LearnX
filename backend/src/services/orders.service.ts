@@ -1,89 +1,143 @@
 import { Order, OrderItem } from '../models/order.model';
 import { Material } from '../models/material.model';
 import { Earnings } from '../models/earnings.model';
+import { User } from '../models/user.model';
+import { sequelize } from '../config/database';
 
 interface CreateOrderData {
   materials: Array<{
-    materialId: string;
+    materialId: string | number;
     quantity: number;
   }>;
-  buyer: string;
+  buyer: string | number;
 }
 
 export const ordersService = {
   create: async (data: CreateOrderData) => {
-    let totalAmount = 0;
-    const orderItems: any[] = [];
+    return sequelize.transaction(async (transaction) => {
+      let totalAmount = 0;
+      const orderItems: Array<{
+        materialId: number;
+        authorId: number;
+        quantity: number;
+        price: number;
+        subtotal: number;
+      }> = [];
 
-    // 验证素材存在并计算总金额
-    for (const item of data.materials) {
-      const material = await Material.findByPk(Number(item.materialId));
-      if (!material) {
-        throw new Error(`素材 ${item.materialId} 不存在`);
+      for (const item of data.materials) {
+        const material = await Material.findByPk(Number(item.materialId), {
+          transaction,
+        });
+
+        if (!material) {
+          throw new Error(`素材 ${item.materialId} 不存在`);
+        }
+
+        if (material.status !== 'approved') {
+          throw new Error('资料未通过审核，暂不能购买');
+        }
+
+        const quantity = Number(item.quantity);
+        if (!Number.isInteger(quantity) || quantity < 1) {
+          throw new Error('购买数量不正确');
+        }
+
+        const price = Number(material.price);
+        const subtotal = price * quantity;
+        totalAmount += subtotal;
+
+        orderItems.push({
+          materialId: material.id,
+          authorId: material.authorId,
+          quantity,
+          price,
+          subtotal
+        });
       }
 
-      const subtotal = Number(material.price) * item.quantity;
-      totalAmount += subtotal;
+      const order = await Order.create(
+        {
+          buyerId: Number(data.buyer),
+          totalAmount,
+          status: 'completed'
+        },
+        { transaction }
+      );
 
-      orderItems.push({
-        materialId: material.id,
-        authorId: material.authorId,
-        quantity: item.quantity,
-        price: material.price,
-        subtotal
-      });
-    }
+      for (const item of orderItems) {
+        await OrderItem.create(
+          {
+            orderId: order.id,
+            materialId: item.materialId,
+            quantity: item.quantity,
+            price: item.price
+          },
+          { transaction }
+        );
 
-    // 创建订单
-    const order = await Order.create({
-      buyerId: Number(data.buyer),
-      totalAmount,
-      status: 'pending'
-    });
-
-    // 创建订单详情
-    for (const item of orderItems) {
-      await OrderItem.create({
-        orderId: order.id,
-        materialId: item.materialId,
-        quantity: item.quantity,
-        price: item.price
-      });
-    }
-
-    // 创建收益记录（平台抽成10%，作者获得90%）
-    for (const item of orderItems) {
-      const authorEarnings = item.subtotal * 0.9;
-      await Earnings.create({
-        userId: item.authorId,
-        amount: authorEarnings,
-        source: 'sale',
-        orderId: order.id
-      });
-    }
-
-    // 重新获取包含详情的订单
-    const orderWithItems = await Order.findByPk(order.id, {
-      include: [
-        { 
-          model: OrderItem, 
-          as: 'items',
-          include: [{ model: Material, as: 'material', attributes: ['id', 'title', 'price'] }]
+        const authorEarnings = item.subtotal * 0.9;
+        if (authorEarnings > 0) {
+          await Earnings.create(
+            {
+              userId: item.authorId,
+              amount: authorEarnings,
+              source: 'sale',
+              orderId: order.id
+            },
+            { transaction }
+          );
         }
-      ]
-    });
+      }
 
-    return orderWithItems;
+      const orderWithItems = await Order.findByPk(order.id, {
+        include: [
+          {
+            model: OrderItem,
+            as: 'items',
+            include: [
+              {
+                model: Material,
+                as: 'material',
+                attributes: ['id', 'title', 'price', 'fileUrl', 'authorId'],
+                include: [
+                  {
+                    model: User,
+                    as: 'author',
+                    attributes: ['id', 'name', 'email']
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        transaction
+      });
+
+      return orderWithItems;
+    });
   },
 
   getByBuyer: async (buyerId: string, page: number = 1, limit: number = 10) => {
     const { count, rows } = await Order.findAndCountAll({
       where: { buyerId: Number(buyerId) },
       include: [
-        { 
-          model: OrderItem, 
+        {
+          model: OrderItem,
           as: 'items',
-          include: [{ model: Material, as: 'material', attributes: ['id', 'title', 'price'] }]
+          include: [
+            {
+              model: Material,
+              as: 'material',
+              attributes: ['id', 'title', 'price', 'fileUrl', 'authorId'],
+              include: [
+                {
+                  model: User,
+                  as: 'author',
+                  attributes: ['id', 'name', 'email']
+                }
+              ]
+            }
+          ]
         }
       ],
       limit,
@@ -103,7 +157,23 @@ export const ordersService = {
   getById: async (id: string, userId: string) => {
     const order = await Order.findByPk(Number(id), {
       include: [
-        { model: OrderItem, as: 'items', include: [{ model: Material, as: 'material' }] }
+        {
+          model: OrderItem,
+          as: 'items',
+          include: [
+            {
+              model: Material,
+              as: 'material',
+              include: [
+                {
+                  model: User,
+                  as: 'author',
+                  attributes: ['id', 'name', 'email']
+                }
+              ]
+            }
+          ]
+        }
       ]
     });
 

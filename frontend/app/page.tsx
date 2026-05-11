@@ -1,3 +1,6 @@
+"use client"
+
+import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
 import { Search, Upload, Shield, Award, ArrowRight, TrendingUp, MessageCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -6,10 +9,34 @@ import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { MaterialCard } from "@/components/material-card"
 import { CategoryCard } from "@/components/category-card"
-import { materials, categories } from "@/lib/mock-data"
+import { getMaterials, type Material } from "@/api/materials"
+import { categories } from "@/lib/catalog"
 
 export default function HomePage() {
-  const hotMaterials = materials.slice(0, 8)
+  const [materials, setMaterials] = useState<Material[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchMaterials() {
+      try {
+        const result = await getMaterials({ limit: 8 })
+        setMaterials(result.materials || [])
+      } catch {
+        setMaterials([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchMaterials()
+  }, [])
+
+  const categoryCards = useMemo(() => {
+    return categories.map((category) => ({
+      ...category,
+      count: materials.filter((material) => material.category === category.id).length,
+    }))
+  }, [materials])
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -63,16 +90,16 @@ export default function HomePage() {
               {/* Quick Stats */}
               <div className="grid grid-cols-3 gap-4 sm:flex sm:flex-wrap sm:justify-center sm:gap-8 md:gap-16 pt-4 sm:pt-8">
                 <div className="text-center">
-                  <div className="text-xl sm:text-3xl md:text-4xl font-extrabold text-white">9000+</div>
-                  <div className="text-xs sm:text-sm text-white/70">优质资料</div>
+                  <div className="text-xl sm:text-3xl md:text-4xl font-extrabold text-white">{materials.length}</div>
+                  <div className="text-xs sm:text-sm text-white/70">已上架资料</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-xl sm:text-3xl md:text-4xl font-extrabold text-amber-300">50000+</div>
-                  <div className="text-xs sm:text-sm text-white/70">活跃用户</div>
+                  <div className="text-xl sm:text-3xl md:text-4xl font-extrabold text-amber-300">{categoryCards.filter((item) => item.count > 0).length}</div>
+                  <div className="text-xs sm:text-sm text-white/70">已有分类</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-xl sm:text-3xl md:text-4xl font-extrabold text-emerald-300">98%</div>
-                  <div className="text-xs sm:text-sm text-white/70">好评率</div>
+                  <div className="text-xl sm:text-3xl md:text-4xl font-extrabold text-emerald-300">审核</div>
+                  <div className="text-xs sm:text-sm text-white/70">公开前检查</div>
                 </div>
               </div>
             </div>
@@ -87,7 +114,7 @@ export default function HomePage() {
               <p className="text-sm sm:text-base text-muted-foreground">覆盖考研全科目，精准定位你的需求</p>
             </div>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
-              {categories.map((category) => (
+              {categoryCards.map((category) => (
                 <CategoryCard
                   key={category.id}
                   id={category.id}
@@ -108,9 +135,9 @@ export default function HomePage() {
               <div>
                 <div className="flex items-center gap-2 text-primary mb-1 sm:mb-2">
                   <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5" />
-                  <span className="text-xs sm:text-sm font-semibold uppercase tracking-wider">热门推荐</span>
+                  <span className="text-xs sm:text-sm font-semibold uppercase tracking-wider">最新上架</span>
                 </div>
-                <h2 className="text-xl sm:text-2xl md:text-3xl font-bold">最受欢迎的资料</h2>
+                <h2 className="text-xl sm:text-2xl md:text-3xl font-bold">真实资料推荐</h2>
               </div>
               <Button variant="outline" asChild className="self-start sm:self-auto border-2 text-xs sm:text-sm h-8 sm:h-10 transition-all duration-200 hover:scale-105 hover:bg-primary hover:text-white hover:border-primary">
                 <Link href="/materials" className="flex items-center gap-1.5 sm:gap-2">
@@ -120,9 +147,22 @@ export default function HomePage() {
               </Button>
             </div>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
-              {hotMaterials.map((material) => (
-                <MaterialCard key={material.id} material={material} />
-              ))}
+              {loading ? (
+                <p className="col-span-full rounded-lg bg-white p-8 text-center text-muted-foreground">
+                  正在加载资料...
+                </p>
+              ) : materials.length > 0 ? (
+                materials.map((material) => (
+                  <MaterialCard key={material.id} material={material} />
+                ))
+              ) : (
+                <div className="col-span-full rounded-lg bg-white p-8 text-center">
+                  <h3 className="text-lg font-semibold">暂时没有公开资料</h3>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    上传并通过审核后，资料会出现在这里。
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </section>

@@ -4,7 +4,7 @@ import Link from "next/link"
 import { Star, Eye } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { getCategoryName, formatPrice } from "@/lib/mock-data"
+import { getCategoryName, formatPrice } from "@/lib/catalog"
 import { MaterialCover } from "@/components/material-cover"
 
 interface MaterialCardData {
@@ -105,14 +105,22 @@ export function MaterialCard({ material }: MaterialCardProps) {
           </div>
 
           {/* Stats */}
-          <div className="flex items-center justify-between text-[10px] sm:text-xs text-muted-foreground">
-            <div className="flex items-center gap-0.5 sm:gap-1">
-              <Star className="h-3 w-3 sm:h-3.5 sm:w-3.5 fill-amber-400 text-amber-400" />
-              <span className="font-medium text-foreground">{material.rating || "5.0"}</span>
-              <span className="hidden sm:inline">({material.reviewCount || 0})</span>
+          {(material.rating || material.salesCount) && (
+            <div className="flex items-center justify-between text-[10px] sm:text-xs text-muted-foreground">
+              {material.rating ? (
+                <div className="flex items-center gap-0.5 sm:gap-1">
+                  <Star className="h-3 w-3 sm:h-3.5 sm:w-3.5 fill-amber-400 text-amber-400" />
+                  <span className="font-medium text-foreground">{material.rating}</span>
+                  {material.reviewCount ? (
+                    <span className="hidden sm:inline">({material.reviewCount})</span>
+                  ) : null}
+                </div>
+              ) : (
+                <span>暂无评分</span>
+              )}
+              {material.salesCount ? <span>{material.salesCount} 人购买</span> : null}
             </div>
-            <span>{material.salesCount || 0} 人购买</span>
-          </div>
+          )}
 
           {/* Price & Uploader */}
           <div className="flex items-center justify-between pt-2 border-t border-border/50">

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
+import { getAssetUrl } from "@/api"
 import {
   Table,
   TableBody,
@@ -16,24 +17,37 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { getOrders } from "@/api/orders"
-import { userOrders, formatPrice, formatDate, type Order } from "@/lib/mock-data"
+import { type Order } from "@/api/orders"
+import { formatDate, formatPrice } from "@/lib/catalog"
 
 const statusMap = {
   pending: { label: "待支付", variant: "outline" as const },
   completed: { label: "已完成", variant: "default" as const },
-  refunded: { label: "已退款", variant: "secondary" as const },
+  cancelled: { label: "已取消", variant: "secondary" as const },
+}
+
+function getOrderMaterial(order: Order) {
+  return order.items?.[0]?.material
+}
+
+function getSellerName(order: Order) {
+  const author = getOrderMaterial(order)?.author
+  return author?.name || author?.email || "资料作者"
 }
 
 export default function OrdersPage() {
-  const [orders, setOrders] = useState<Order[]>(userOrders)
+  const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
 
   useEffect(() => {
     async function fetchData() {
       try {
-        await getOrders()
-      } catch {
-        // Keep mock data as fallback
+        const result = await getOrders()
+        setOrders(result.orders || [])
+        setError("")
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "订单加载失败")
       } finally {
         setLoading(false)
       }
@@ -61,7 +75,16 @@ export default function OrdersPage() {
         <p className="text-muted-foreground">查看你购买的所有资料</p>
       </div>
 
+      {error && (
+        <Card className="border-0">
+          <CardContent className="p-8 text-center text-muted-foreground">
+            {error}
+          </CardContent>
+        </Card>
+      )}
+
       {/* Orders Table - Desktop */}
+      {!error && orders.length > 0 && (
       <Card className="border-0 hidden md:block">
         <CardContent className="p-0">
           <Table>
@@ -76,103 +99,128 @@ export default function OrdersPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {orders.map((order) => (
-                <TableRow key={order.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <div className="h-12 w-12 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
-                        <FileText className="h-6 w-6 text-primary" />
+              {orders.map((order) => {
+                const material = getOrderMaterial(order)
+                const fileUrl = getAssetUrl(material?.fileUrl)
+
+                return (
+                  <TableRow key={order.id}>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <div className="h-12 w-12 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+                          <FileText className="h-6 w-6 text-primary" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-medium truncate max-w-[300px]">
+                            {material?.title || `订单 #${order.id}`}
+                          </p>
+                          <p className="text-xs text-muted-foreground">订单号: {order.id}</p>
+                        </div>
                       </div>
-                      <div className="min-w-0">
-                        <p className="font-medium truncate max-w-[300px]">{order.materialTitle}</p>
-                        <p className="text-xs text-muted-foreground">订单号: {order.id}</p>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">{getSellerName(order)}</TableCell>
+                    <TableCell className="font-semibold">{formatPrice(order.totalAmount)}</TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={statusMap[order.status].variant}
+                        className={order.status === "completed" ? "bg-green-100 text-green-700 hover:bg-green-100" : ""}
+                      >
+                        {statusMap[order.status].label}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">{formatDate(order.createdAt)}</TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        {material && (
+                          <Button variant="outline" size="sm" asChild>
+                            <Link href={`/materials/${material.id}`} className="flex items-center gap-1">
+                              <ExternalLink className="h-3 w-3" />
+                              查看
+                            </Link>
+                          </Button>
+                        )}
+                        {order.status === "completed" && fileUrl && (
+                          <Button size="sm" className="bg-primary hover:bg-blue-600" asChild>
+                            <a href={fileUrl} download>
+                              <Download className="h-3 w-3 mr-1" />
+                              下载
+                            </a>
+                          </Button>
+                        )}
                       </div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">{order.sellerName}</TableCell>
-                  <TableCell className="font-semibold">{formatPrice(order.price)}</TableCell>
-                  <TableCell>
-                    <Badge 
-                      variant={statusMap[order.status].variant}
-                      className={order.status === "completed" ? "bg-green-100 text-green-700 hover:bg-green-100" : ""}
-                    >
-                      {statusMap[order.status].label}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">{formatDate(order.createdAt)}</TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <Button variant="outline" size="sm" asChild>
-                        <Link href={`/materials/${order.materialId}`} className="flex items-center gap-1">
-                          <ExternalLink className="h-3 w-3" />
-                          查看
-                        </Link>
-                      </Button>
-                      {order.status === "completed" && (
-                        <Button size="sm" className="bg-primary hover:bg-blue-600">
-                          <Download className="h-3 w-3 mr-1" />
-                          下载
-                        </Button>
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
             </TableBody>
           </Table>
         </CardContent>
       </Card>
+      )}
 
       {/* Orders List - Mobile */}
+      {!error && orders.length > 0 && (
       <div className="md:hidden space-y-4">
-        {orders.map((order) => (
-          <Card key={order.id} className="border-0">
-            <CardContent className="p-4">
-              <div className="flex items-start gap-3 mb-4">
-                <div className="h-14 w-14 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
-                  <FileText className="h-7 w-7 text-primary" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium line-clamp-2 mb-1">{order.materialTitle}</p>
-                  <p className="text-xs text-muted-foreground">卖家: {order.sellerName}</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center justify-between text-sm mb-4">
-                <span className="text-muted-foreground">订单号: {order.id}</span>
-                <Badge 
-                  variant={statusMap[order.status].variant}
-                  className={order.status === "completed" ? "bg-green-100 text-green-700" : ""}
-                >
-                  {statusMap[order.status].label}
-                </Badge>
-              </div>
+        {orders.map((order) => {
+          const material = getOrderMaterial(order)
+          const fileUrl = getAssetUrl(material?.fileUrl)
 
-              <div className="flex items-center justify-between pt-3 border-t">
-                <div>
-                  <p className="text-lg font-bold">{formatPrice(order.price)}</p>
-                  <p className="text-xs text-muted-foreground">{formatDate(order.createdAt)}</p>
+          return (
+            <Card key={order.id} className="border-0">
+              <CardContent className="p-4">
+                <div className="flex items-start gap-3 mb-4">
+                  <div className="h-14 w-14 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+                    <FileText className="h-7 w-7 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium line-clamp-2 mb-1">
+                      {material?.title || `订单 #${order.id}`}
+                    </p>
+                    <p className="text-xs text-muted-foreground">卖家: {getSellerName(order)}</p>
+                  </div>
                 </div>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm" asChild>
-                    <Link href={`/materials/${order.materialId}`}>
-                      查看
-                    </Link>
-                  </Button>
-                  {order.status === "completed" && (
-                    <Button size="sm" className="bg-primary hover:bg-blue-600">
-                      <Download className="h-3 w-3 mr-1" />
-                      下载
-                    </Button>
-                  )}
+
+                <div className="flex items-center justify-between text-sm mb-4">
+                  <span className="text-muted-foreground">订单号: {order.id}</span>
+                  <Badge
+                    variant={statusMap[order.status].variant}
+                    className={order.status === "completed" ? "bg-green-100 text-green-700" : ""}
+                  >
+                    {statusMap[order.status].label}
+                  </Badge>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+
+                <div className="flex items-center justify-between pt-3 border-t">
+                  <div>
+                    <p className="text-lg font-bold">{formatPrice(order.totalAmount)}</p>
+                    <p className="text-xs text-muted-foreground">{formatDate(order.createdAt)}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    {material && (
+                      <Button variant="outline" size="sm" asChild>
+                        <Link href={`/materials/${material.id}`}>
+                          查看
+                        </Link>
+                      </Button>
+                    )}
+                    {order.status === "completed" && fileUrl && (
+                      <Button size="sm" className="bg-primary hover:bg-blue-600" asChild>
+                        <a href={fileUrl} download>
+                          <Download className="h-3 w-3 mr-1" />
+                          下载
+                        </a>
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )
+        })}
       </div>
+      )}
 
-      {orders.length === 0 && (
+      {!error && orders.length === 0 && (
         <Card className="border-0">
           <CardContent className="p-12 text-center">
             <div className="h-20 w-20 mx-auto rounded-full bg-muted flex items-center justify-center mb-4">

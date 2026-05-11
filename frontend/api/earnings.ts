@@ -2,15 +2,10 @@ import { fetchApi } from './index';
 
 // 收益相关类型
 export interface EarningsStats {
-  totalEarnings: number;
-  monthlyEarnings: number;
-  dailyEarnings: number;
-  materialCount: number;
-  saleCount: number;
-  trends: {
-    date: string;
-    amount: number;
-  }[];
+  total: number;
+  weekly: number;
+  monthly: number;
+  yearly: number;
 }
 
 export interface EarningsDetail {
@@ -21,13 +16,23 @@ export interface EarningsDetail {
     title: string;
   };
   orderId: number;
-  buyerId: number;
-  buyer: {
+  order?: {
     id: number;
-    username: string;
+    buyer?: {
+      id: number;
+      name?: string;
+      email?: string;
+    };
+    items?: Array<{
+      material?: {
+        id: number;
+        title: string;
+        price: number;
+        fileUrl?: string;
+      };
+    }>;
   };
   amount: number;
-  quantity: number;
   createdAt: string;
 }
 

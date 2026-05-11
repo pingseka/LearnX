@@ -2,7 +2,7 @@
 
 import { BookOpen, Calculator, FileText, Globe, GraduationCap } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { type Category, getCategoryName } from "@/lib/mock-data"
+import { type Category, getCategoryName } from "@/lib/catalog"
 
 interface MaterialCoverProps {
   title: string

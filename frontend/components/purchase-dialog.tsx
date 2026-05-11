@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Check, CreditCard, Wallet, Loader2 } from "lucide-react"
+import { Check, Info, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -11,9 +11,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Label } from "@/components/ui/label"
-import { formatPrice } from "@/lib/mock-data"
+import { createOrder } from "@/api/orders"
+import { formatPrice } from "@/lib/catalog"
 
 interface PurchaseMaterial {
   id: number
@@ -29,22 +28,29 @@ interface PurchaseDialogProps {
 }
 
 export function PurchaseDialog({ material, open, onOpenChange, onSuccess }: PurchaseDialogProps) {
-  const [paymentMethod, setPaymentMethod] = useState("alipay")
   const [isProcessing, setIsProcessing] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
+  const [error, setError] = useState("")
 
   const handlePurchase = async () => {
     setIsProcessing(true)
-    // 模拟支付过程
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    setIsProcessing(false)
-    setIsSuccess(true)
-    // 延迟关闭并触发成功回调
-    setTimeout(() => {
-      setIsSuccess(false)
-      onOpenChange(false)
-      onSuccess()
-    }, 1500)
+    setError("")
+
+    try {
+      await createOrder({
+        materials: [{ materialId: material.id, quantity: 1 }],
+      })
+      setIsSuccess(true)
+      setTimeout(() => {
+        setIsSuccess(false)
+        onOpenChange(false)
+        onSuccess()
+      }, 1200)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "购买失败")
+    } finally {
+      setIsProcessing(false)
+    }
   }
 
   if (isSuccess) {
@@ -55,9 +61,9 @@ export function PurchaseDialog({ material, open, onOpenChange, onSuccess }: Purc
             <div className="h-16 w-16 rounded-full bg-green-100 flex items-center justify-center mb-4">
               <Check className="h-8 w-8 text-green-600" />
             </div>
-            <h3 className="text-xl font-semibold mb-2">支付成功</h3>
+            <h3 className="text-xl font-semibold mb-2">沙盒购买成功</h3>
             <p className="text-muted-foreground text-center">
-              资料已添加到您的已购列表，可随时下载查看
+              订单已写入数据库，可在个人中心查看和下载资料。
             </p>
           </div>
         </DialogContent>
@@ -70,7 +76,7 @@ export function PurchaseDialog({ material, open, onOpenChange, onSuccess }: Purc
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>确认购买</DialogTitle>
-          <DialogDescription>请选择支付方式完成购买</DialogDescription>
+          <DialogDescription>课堂沙盒模式会直接创建已完成订单</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6 py-4">
@@ -85,35 +91,19 @@ export function PurchaseDialog({ material, open, onOpenChange, onSuccess }: Purc
             </div>
           </div>
 
-          {/* Payment Methods */}
-          <div className="space-y-3">
-            <Label>支付方式</Label>
-            <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="space-y-2">
-              <div className="flex items-center space-x-3 border rounded-xl p-4 cursor-pointer hover:bg-muted/50 transition-colors">
-                <RadioGroupItem value="alipay" id="alipay" />
-                <Label htmlFor="alipay" className="flex-1 cursor-pointer flex items-center gap-3">
-                  <div className="h-8 w-8 rounded-lg bg-blue-500 flex items-center justify-center">
-                    <Wallet className="h-4 w-4 text-white" />
-                  </div>
-                  <span>支付宝</span>
-                </Label>
-              </div>
-              <div className="flex items-center space-x-3 border rounded-xl p-4 cursor-pointer hover:bg-muted/50 transition-colors">
-                <RadioGroupItem value="wechat" id="wechat" />
-                <Label htmlFor="wechat" className="flex-1 cursor-pointer flex items-center gap-3">
-                  <div className="h-8 w-8 rounded-lg bg-green-500 flex items-center justify-center">
-                    <CreditCard className="h-4 w-4 text-white" />
-                  </div>
-                  <span>微信支付</span>
-                </Label>
-              </div>
-            </RadioGroup>
+          {/* Notice */}
+          <div className="flex items-start gap-2 rounded-lg bg-blue-50 p-3 text-sm leading-6 text-blue-700">
+            <Info className="mt-0.5 h-4 w-4 shrink-0" />
+            <p>
+              这里不接真实微信或支付宝。点击确认后，系统会写入一笔已完成订单，并给作者生成 90% 的沙盒收益。
+            </p>
           </div>
 
-          {/* Notice */}
-          <p className="text-xs text-muted-foreground">
-            点击"立即支付"即表示您同意《用户购买协议》，购买后可在个人中心查看和下载资料。
-          </p>
+          {error && (
+            <p className="rounded-lg bg-red-50 p-3 text-sm text-red-600">
+              {error}
+            </p>
+          )}
         </div>
 
         <DialogFooter>
@@ -131,7 +121,7 @@ export function PurchaseDialog({ material, open, onOpenChange, onSuccess }: Purc
                 支付中...
               </>
             ) : (
-              `立即支付 ${formatPrice(material.price)}`
+              `确认沙盒购买 ${formatPrice(material.price)}`
             )}
           </Button>
         </DialogFooter>

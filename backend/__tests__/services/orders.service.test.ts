@@ -23,6 +23,16 @@ jest.mock('../../src/models/earnings.model', () => ({
   }
 }));
 
+jest.mock('../../src/models/user.model', () => ({
+  User: {}
+}));
+
+jest.mock('../../src/config/database', () => ({
+  sequelize: {
+    transaction: jest.fn(async (callback) => callback('transaction'))
+  }
+}));
+
 const { Order, OrderItem } = require('../../src/models/order.model');
 const { Material } = require('../../src/models/material.model');
 const { Earnings } = require('../../src/models/earnings.model');
@@ -32,7 +42,8 @@ describe('ordersService', () => {
     id: 1,
     title: 'Test Material',
     price: 100,
-    authorId: 2
+    authorId: 2,
+    status: 'approved'
   };
 
   const mockOrder = {
@@ -63,12 +74,17 @@ describe('ordersService', () => {
         buyer: '1'
       });
 
-      expect(Material.findByPk).toHaveBeenCalledWith(1);
-      expect(Order.create).toHaveBeenCalledWith({
-        buyerId: 1,
-        totalAmount: 200,
-        status: 'pending'
+      expect(Material.findByPk).toHaveBeenCalledWith(1, {
+        transaction: 'transaction'
       });
+      expect(Order.create).toHaveBeenCalledWith(
+        {
+          buyerId: 1,
+          totalAmount: 200,
+          status: 'completed'
+        },
+        { transaction: 'transaction' }
+      );
       expect(OrderItem.create).toHaveBeenCalled();
       expect(Earnings.create).toHaveBeenCalled();
       expect(result).toBeDefined();

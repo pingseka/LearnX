@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { 
@@ -15,7 +16,8 @@ import {
 import { cn } from "@/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { currentUser, formatPrice } from "@/lib/mock-data"
+import { getEarningsStats } from "@/api/earnings"
+import { formatCurrency } from "@/lib/catalog"
 import { useAuth } from "@/lib/auth-context"
 
 const sidebarItems = [
@@ -33,10 +35,28 @@ const adminSidebarItems = [
 export function DashboardSidebar() {
   const pathname = usePathname()
   const { user } = useAuth()
+  const [balance, setBalance] = useState(0)
   const visibleSidebarItems =
     user?.role === "admin"
       ? [...sidebarItems, ...adminSidebarItems]
       : sidebarItems
+  const displayName = user?.name || "用户"
+  const displayEmail = user?.email || "未登录"
+
+  useEffect(() => {
+    async function fetchBalance() {
+      try {
+        const stats = await getEarningsStats()
+        setBalance(stats.total || 0)
+      } catch {
+        setBalance(0)
+      }
+    }
+
+    if (user) {
+      fetchBalance()
+    }
+  }, [user])
 
   return (
     <aside className="hidden lg:flex flex-col w-64 border-r-2 border-border bg-card">
@@ -44,20 +64,20 @@ export function DashboardSidebar() {
       <div className="p-6 border-b-2 border-border">
         <div className="flex items-center gap-3 mb-4">
           <Avatar className="h-12 w-12">
-            <AvatarImage src={currentUser.avatar} alt={currentUser.name} />
+            <AvatarImage src="" alt={displayName} />
             <AvatarFallback className="bg-primary text-white">
-              {currentUser.name.charAt(0)}
+              {displayName.charAt(0)}
             </AvatarFallback>
           </Avatar>
           <div>
-            <p className="font-semibold">{currentUser.name}</p>
-            <p className="text-xs text-muted-foreground">{currentUser.email}</p>
+            <p className="font-semibold">{displayName}</p>
+            <p className="text-xs text-muted-foreground">{displayEmail}</p>
           </div>
         </div>
         <div className="p-3 bg-blue-50 rounded-lg">
           <p className="text-xs text-muted-foreground mb-1">账户余额</p>
           <p className="text-xl font-bold text-primary">
-            {formatPrice(currentUser.balance)}
+            {formatCurrency(balance)}
           </p>
         </div>
       </div>
