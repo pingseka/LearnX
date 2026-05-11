@@ -1,13 +1,7 @@
 import type { Metadata } from 'next'
-import { Outfit } from 'next/font/google'
 import './globals.css'
 import { AuthProvider } from '@/lib/auth-context'
 import { Toaster } from '@/components/ui/sonner'
-
-const outfit = Outfit({
-  subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700', '800'],
-})
 
 export const metadata: Metadata = {
   title: '研料库 - 考研资料共享平台',
@@ -38,7 +32,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="zh-CN">
-      <body className={`${outfit.className} antialiased`}>
+      <body className="font-sans antialiased">
         <AuthProvider>
           {children}
           <Toaster richColors position="top-right" />

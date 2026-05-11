@@ -1,8 +1,9 @@
 "use client"
 
 import { useState, useMemo, useEffect, Suspense } from "react"
+import Link from "next/link"
 import { useSearchParams } from "next/navigation"
-import { Search, SlidersHorizontal, ChevronDown } from "lucide-react"
+import { ArrowRight, Search, SlidersHorizontal, Upload } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -280,12 +281,36 @@ function MaterialsContent() {
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-16">
-                  <div className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-muted mb-4">
-                    <Search className="h-10 w-10 text-muted-foreground" />
+                <div className="rounded-lg border bg-white p-8 text-center">
+                  <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-lg bg-slate-100">
+                    <Search className="h-8 w-8 text-slate-500" />
                   </div>
-                  <h3 className="text-lg font-semibold mb-2">未找到相关资料</h3>
-                  <p className="text-muted-foreground">试试调整筛选条件或搜索关键词</p>
+                  <h3 className="text-lg font-semibold text-slate-950">
+                    暂时没有匹配的资料
+                  </h3>
+                  <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-600">
+                    可以清空关键词、放宽价格区间，或者直接去上传一份你手里的资料。
+                    例如你搜索“408 真题”，也可以先切到专业课分类看看。
+                  </p>
+                  <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setSearchQuery("")
+                        setSelectedCategory("all")
+                        setPriceRange([0, 100])
+                      }}
+                    >
+                      查看全部资料
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                    <Button asChild>
+                      <Link href="/upload">
+                        <Upload className="mr-2 h-4 w-4" />
+                        上传资料
+                      </Link>
+                    </Button>
+                  </div>
                 </div>
               )}
             </div>

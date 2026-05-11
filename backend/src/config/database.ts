@@ -1,4 +1,4 @@
-import { Sequelize } from 'sequelize';
+import { DataTypes, Sequelize } from 'sequelize';
 
 // 创建 Sequelize 实例（使用SQLite）
 export const sequelize = new Sequelize({
@@ -21,7 +21,21 @@ export const connectDB = async () => {
 // 同步数据库模型
 export const syncDB = async () => {
   try {
-    await sequelize.sync({ alter: true });
+    await sequelize.sync();
+
+    const queryInterface = sequelize.getQueryInterface();
+    const tables = await queryInterface.showAllTables();
+    if (tables.includes('materials')) {
+      const materials = await queryInterface.describeTable('materials');
+      if (!materials.status) {
+        await queryInterface.addColumn('materials', 'status', {
+          type: DataTypes.STRING,
+          allowNull: false,
+          defaultValue: 'pending'
+        });
+      }
+    }
+
     console.log('Database synchronized');
   } catch (error) {
     console.error('Database synchronization error:', error);

@@ -1,4 +1,5 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+const API_ORIGIN = API_BASE_URL.replace(/\/api\/?$/, '');
 
 // Unified backend response type
 export interface BackendResponse<T = any> {
@@ -99,4 +100,16 @@ export async function uploadFile<T>(
     }
     throw err;
   }
+}
+
+export function getAssetUrl(path?: string | null): string | null {
+  if (!path) {
+    return null;
+  }
+
+  if (/^https?:\/\//i.test(path)) {
+    return path;
+  }
+
+  return `${API_ORIGIN}${path.startsWith('/') ? path : `/${path}`}`;
 }

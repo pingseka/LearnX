@@ -11,13 +11,14 @@ interface MaterialAttributes {
   category: string;
   price: number;
   authorId: number;
+  status: 'pending' | 'approved' | 'rejected';
   createdAt: Date;
   updatedAt: Date;
 }
 
 type MaterialCreationAttributes = Optional<
   MaterialAttributes,
-  'id' | 'thumbnailUrl' | 'createdAt' | 'updatedAt'
+  'id' | 'thumbnailUrl' | 'status' | 'createdAt' | 'updatedAt'
 >;
 
 export class Material extends Model<MaterialAttributes, MaterialCreationAttributes> implements MaterialAttributes {
@@ -29,6 +30,7 @@ export class Material extends Model<MaterialAttributes, MaterialCreationAttribut
   public category!: string;
   public price!: number;
   public authorId!: number;
+  public status!: 'pending' | 'approved' | 'rejected';
   public createdAt!: Date;
   public updatedAt!: Date;
 }
@@ -74,6 +76,11 @@ Material.init(
         model: User,
         key: 'id'
       }
+    },
+    status: {
+      type: DataTypes.ENUM('pending', 'approved', 'rejected'),
+      allowNull: false,
+      defaultValue: 'pending'
     },
     createdAt: {
       type: DataTypes.DATE,

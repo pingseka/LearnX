@@ -1,20 +1,20 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
-import { 
-  Plus, 
-  FileText, 
-  MoreVertical, 
-  Pencil, 
-  Trash2, 
+import {
+  Clock3,
   Eye,
-  EyeOff,
-  Star
+  MoreVertical,
+  Pencil,
+  Plus,
+  Trash2,
+  XCircle,
 } from "lucide-react"
+import { getMyMaterials, type Material } from "@/api/materials"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   DropdownMenu,
@@ -23,193 +23,256 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { MaterialCover } from "@/components/material-cover"
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
-import { getMyMaterials } from "@/api/materials"
-import { userMaterials, getCategoryName, formatPrice, formatDate } from "@/lib/mock-data"
+  formatPrice,
+  getCategoryName,
+  type Category,
+} from "@/lib/mock-data"
+
+const statusConfig = {
+  pending: {
+    label: "待审核",
+    className: "bg-amber-100 text-amber-800 border-amber-200",
+    icon: Clock3,
+  },
+  approved: {
+    label: "已通过",
+    className: "bg-emerald-100 text-emerald-800 border-emerald-200",
+    icon: Eye,
+  },
+  rejected: {
+    label: "已拒绝",
+    className: "bg-rose-100 text-rose-800 border-rose-200",
+    icon: XCircle,
+  },
+}
+
+function asCategory(category: string): Category {
+  if (
+    category === "politics" ||
+    category === "english" ||
+    category === "math" ||
+    category === "professional"
+  ) {
+    return category
+  }
+
+  return "professional"
+}
+
+function getTags(material: Material) {
+  return material.tags?.map((tag) => tag.name).filter(Boolean) ?? []
+}
 
 export default function MyMaterialsPage() {
-  const [materials, setMaterials] = useState(userMaterials)
-  const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [materials, setMaterials] = useState<Material[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
 
   useEffect(() => {
     async function fetchData() {
       try {
-        await getMyMaterials()
-      } catch {
-        // Keep mock data as fallback
+        const result = await getMyMaterials()
+        setMaterials(result.materials)
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "资料加载失败"
+        setError(message)
       } finally {
         setLoading(false)
       }
     }
+
     fetchData()
   }, [])
 
-  const handleDelete = (id: string) => {
-    setMaterials(materials.filter((m) => m.id !== id))
-    setDeleteId(null)
-  }
-
-  const handleToggleVisibility = (id: string) => {
-    // 模拟下架/上架操作
-    setMaterials(
-      materials.map((m) =>
-        m.id === id ? { ...m, salesCount: m.salesCount === 0 ? 100 : 0 } : m
-      )
+  const summary = useMemo(() => {
+    return materials.reduce(
+      (acc, material) => {
+        const status = material.status ?? "pending"
+        acc[status] += 1
+        return acc
+      },
+      { pending: 0, approved: 0, rejected: 0 }
     )
-  }
+  }, [materials])
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
         <div>
           <h1 className="text-2xl font-bold">我的资料</h1>
-          <p className="text-muted-foreground">管理你上传的所有资料</p>
+          <p className="text-muted-foreground">
+            查看上传记录、审核状态和资料展示情况
+          </p>
         </div>
-        <Button asChild className="self-start bg-primary hover:bg-blue-600 transition-all duration-200 hover:scale-105">
+        <Button asChild className="self-start">
           <Link href="/upload" className="flex items-center gap-2">
             <Plus className="h-4 w-4" />
-            上传新资料
+            发布新资料
           </Link>
         </Button>
       </div>
 
-      {/* Materials List */}
+      <div className="grid gap-3 sm:grid-cols-3">
+        <Card>
+          <CardContent className="p-4">
+            <p className="text-sm text-slate-500">待审核</p>
+            <p className="mt-2 text-2xl font-semibold text-amber-700">
+              {summary.pending}
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <p className="text-sm text-slate-500">已通过</p>
+            <p className="mt-2 text-2xl font-semibold text-emerald-700">
+              {summary.approved}
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <p className="text-sm text-slate-500">已拒绝</p>
+            <p className="mt-2 text-2xl font-semibold text-rose-700">
+              {summary.rejected}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
       {loading ? (
         <div className="space-y-4">
-          {[...Array(3)].map((_, i) => (
-            <Skeleton key={i} className="h-32 rounded-lg" />
+          {[...Array(3)].map((_, index) => (
+            <Skeleton key={index} className="h-32 rounded-lg" />
           ))}
         </div>
+      ) : error ? (
+        <Card>
+          <CardContent className="p-8 text-center">
+            <h3 className="font-semibold text-slate-950">资料加载失败</h3>
+            <p className="mt-2 text-sm text-slate-500">{error}</p>
+          </CardContent>
+        </Card>
       ) : materials.length > 0 ? (
         <div className="space-y-4">
-          {materials.map((material) => (
-            <Card key={material.id} className="border-0">
-              <CardContent className="p-4 md:p-6">
-                <div className="flex flex-col md:flex-row gap-4">
-                  {/* Cover */}
-                  <div className="w-full md:w-32 h-24 md:h-24 rounded-xl bg-muted flex items-center justify-center shrink-0">
-                    <FileText className="h-10 w-10 text-muted-foreground" />
-                  </div>
+          {materials.map((material) => {
+            const category = asCategory(material.category)
+            const status = material.status ?? "pending"
+            const StatusIcon = statusConfig[status].icon
 
-                  {/* Info */}
-                  <div className="flex-1 min-w-0 space-y-2">
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <Badge className="mb-2 bg-primary border-0">
-                          {getCategoryName(material.category)}
-                        </Badge>
-                        <h3 className="font-semibold line-clamp-2">{material.title}</h3>
+            return (
+              <Card key={material.id}>
+                <CardContent className="p-4 md:p-5">
+                  <div className="flex flex-col gap-4 md:flex-row">
+                    <div className="h-32 w-full shrink-0 md:w-40">
+                      <MaterialCover
+                        title={material.title}
+                        category={category}
+                        className="h-full"
+                      />
+                    </div>
+
+                    <div className="min-w-0 flex-1 space-y-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <div className="mb-2 flex flex-wrap gap-2">
+                            <Badge variant="outline">
+                              {getCategoryName(category)}
+                            </Badge>
+                            <Badge
+                              variant="outline"
+                              className={statusConfig[status].className}
+                            >
+                              <StatusIcon className="mr-1 h-3.5 w-3.5" />
+                              {statusConfig[status].label}
+                            </Badge>
+                          </div>
+                          <h3 className="line-clamp-2 font-semibold text-slate-950">
+                            {material.title}
+                          </h3>
+                          <p className="mt-1 line-clamp-2 text-sm text-slate-500">
+                            {material.description}
+                          </p>
+                        </div>
+
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem asChild>
+                              <Link
+                                href={`/materials/${material.id}`}
+                                className="flex items-center gap-2"
+                              >
+                                <Eye className="h-4 w-4" />
+                                查看详情
+                              </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="flex items-center gap-2">
+                              <Pencil className="h-4 w-4" />
+                              编辑资料
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem className="flex items-center gap-2 text-destructive focus:text-destructive">
+                              <Trash2 className="h-4 w-4" />
+                              删除资料
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="shrink-0">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem asChild>
-                            <Link href={`/materials/${material.id}`} className="flex items-center gap-2">
-                              <Eye className="h-4 w-4" />
-                              查看详情
-                            </Link>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="flex items-center gap-2">
-                            <Pencil className="h-4 w-4" />
-                            编辑资料
-                          </DropdownMenuItem>
-                          <DropdownMenuItem 
-                            className="flex items-center gap-2"
-                            onClick={() => handleToggleVisibility(material.id)}
-                          >
-                            <EyeOff className="h-4 w-4" />
-                            下架资料
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem 
-                            className="flex items-center gap-2 text-destructive focus:text-destructive"
-                            onClick={() => setDeleteId(material.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                            删除资料
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
 
-                    {/* Stats */}
-                    <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-                      <span className="font-semibold text-foreground">{formatPrice(material.price)}</span>
-                      <span>销量: {material.salesCount}</span>
-                      <div className="flex items-center gap-1">
-                        <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-                        <span>{material.rating}</span>
+                      <div className="flex flex-wrap items-center gap-3 text-sm text-slate-500">
+                        <span className="font-semibold text-blue-700">
+                          {formatPrice(Number(material.price))}
+                        </span>
+                        <span>
+                          上传于：
+                          {new Date(material.createdAt).toLocaleDateString(
+                            "zh-CN"
+                          )}
+                        </span>
                       </div>
-                      <span>上传于: {formatDate(material.createdAt)}</span>
-                    </div>
 
-                    {/* Tags */}
-                    <div className="flex flex-wrap gap-1">
-                      {material.tags.map((tag) => (
-                        <Badge key={tag} variant="outline" className="text-xs">
-                          {tag}
-                        </Badge>
-                      ))}
+                      <div className="flex flex-wrap gap-1.5">
+                        {getTags(material).length > 0 ? (
+                          getTags(material).map((tag) => (
+                            <Badge key={tag} variant="secondary">
+                              {tag}
+                            </Badge>
+                          ))
+                        ) : (
+                          <span className="text-sm text-slate-400">
+                            暂无标签
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            )
+          })}
         </div>
       ) : (
-        <Card className="border-0">
+        <Card>
           <CardContent className="p-12 text-center">
-            <div className="h-20 w-20 mx-auto rounded-full bg-muted flex items-center justify-center mb-4">
-              <FileText className="h-10 w-10 text-muted-foreground" />
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-lg bg-slate-100">
+              <Plus className="h-8 w-8 text-slate-500" />
             </div>
-            <h3 className="text-lg font-semibold mb-2">暂无资料</h3>
-            <p className="text-muted-foreground mb-6">你还没有上传任何资料，开始分享你的考研笔记吧</p>
-            <Button asChild className="bg-primary hover:bg-blue-600">
-              <Link href="/upload" className="flex items-center gap-2">
-                <Plus className="h-4 w-4" />
-                上传第一份资料
-              </Link>
+            <h3 className="text-lg font-semibold">还没有上传资料</h3>
+            <p className="mt-2 text-muted-foreground">
+              发布第一份资料后，这里会显示审核状态和展示信息。
+            </p>
+            <Button asChild className="mt-6">
+              <Link href="/upload">发布第一份资料</Link>
             </Button>
           </CardContent>
         </Card>
       )}
-
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>确认删除</AlertDialogTitle>
-            <AlertDialogDescription>
-              删除后资料将无法恢复，已购买的用户仍可下载。确定要删除这份资料吗？
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>取消</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => deleteId && handleDelete(deleteId)}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              确认删除
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   )
 }

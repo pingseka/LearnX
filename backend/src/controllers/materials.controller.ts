@@ -91,6 +91,38 @@ export const materialsController = {
     }
   },
 
+  getPendingReview: async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 20;
+
+      const result = await materialsService.getPendingReview(page, limit);
+      res.status(200).json(success(result));
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  approve: async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      const result = await materialsService.review(id, 'approved');
+      res.status(200).json(success(result, '资料已通过审核'));
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  reject: async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      const result = await materialsService.review(id, 'rejected');
+      res.status(200).json(success(result, '资料已拒绝'));
+    } catch (error) {
+      next(error);
+    }
+  },
+
   update: [
     upload.fields([
       { name: 'file', maxCount: 1 },
@@ -117,7 +149,7 @@ export const materialsController = {
           return res.status(404).json(apiError('资料不存在'));
         }
 
-        if (existingMaterial.author !== authorId) {
+        if (existingMaterial.authorId !== Number(authorId)) {
           return res.status(403).json(apiError('无权修改此资源'));
         }
 
@@ -152,7 +184,7 @@ export const materialsController = {
         return res.status(404).json(apiError('资料不存在'));
       }
 
-      if (existingMaterial.author !== authorId) {
+      if (existingMaterial.authorId !== Number(authorId)) {
         return res.status(403).json(apiError('无权删除此资源'));
       }
 

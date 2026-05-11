@@ -13,10 +13,16 @@ import {
 } from "@/components/ui/dialog"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
-import { type Material, formatPrice } from "@/lib/mock-data"
+import { formatPrice } from "@/lib/mock-data"
+
+interface PurchaseMaterial {
+  id: number
+  title: string
+  price: number
+}
 
 interface PurchaseDialogProps {
-  material: Material
+  material: PurchaseMaterial
   open: boolean
   onOpenChange: (open: boolean) => void
   onSuccess: () => void

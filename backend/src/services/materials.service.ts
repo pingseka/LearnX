@@ -21,6 +21,7 @@ interface UpdateMaterialData {
   thumbnailUrl?: string;
   category?: string;
   price?: number;
+  status?: 'pending' | 'approved' | 'rejected';
   tags?: string[];
 }
 
@@ -65,7 +66,7 @@ export const materialsService = {
   },
 
   getAll: async (page: number = 1, limit: number = 10, category?: string, search?: string) => {
-    const where: any = {};
+    const where: any = { status: 'approved' };
     
     if (category) {
       where.category = category;
@@ -131,6 +132,43 @@ export const materialsService = {
       limit,
       pages: Math.ceil(count / limit)
     };
+  },
+
+  getPendingReview: async (page: number = 1, limit: number = 20) => {
+    const { count, rows } = await Material.findAndCountAll({
+      where: { status: 'pending' },
+      include: [
+        { model: User, as: 'author', attributes: ['id', 'name', 'email'] },
+        { model: Tag, as: 'tags', attributes: ['id', 'name'] }
+      ],
+      limit,
+      offset: (page - 1) * limit,
+      order: [['createdAt', 'ASC']]
+    });
+
+    return {
+      materials: rows,
+      total: count,
+      page,
+      limit,
+      pages: Math.ceil(count / limit)
+    };
+  },
+
+  review: async (id: string, status: 'approved' | 'rejected') => {
+    const material = await Material.findByPk(Number(id));
+    if (!material) {
+      throw new Error('素材不存在');
+    }
+
+    await material.update({ status });
+
+    return Material.findByPk(material.id, {
+      include: [
+        { model: User, as: 'author', attributes: ['id', 'name', 'email'] },
+        { model: Tag, as: 'tags', attributes: ['id', 'name'] }
+      ]
+    });
   },
 
   update: async (id: string, data: UpdateMaterialData, authorId: string) => {

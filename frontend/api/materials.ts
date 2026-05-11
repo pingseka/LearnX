@@ -12,12 +12,15 @@ export interface Material {
   description: string;
   price: number;
   category: string;
+  status?: 'pending' | 'approved' | 'rejected';
   fileUrl: string;
-  thumbnailUrl: string;
+  thumbnailUrl: string | null;
   authorId: number;
   author: {
     id: number;
-    username: string;
+    name?: string;
+    username?: string;
+    email?: string;
   };
   tags: Tag[];
   createdAt: string;
@@ -31,7 +34,7 @@ export interface CreateMaterialData {
   category: string;
   tags: string[];
   file: File;
-  thumbnail: File;
+  thumbnail?: File;
 }
 
 export interface UpdateMaterialData {
@@ -67,6 +70,37 @@ export async function getMaterials(params?: {
   return fetchApi<{ materials: Material[]; total: number }>(endpoint);
 }
 
+export async function getPendingReviewMaterials(params?: {
+  page?: number;
+  limit?: number;
+}): Promise<{ materials: Material[]; total: number }> {
+  const queryParams = new URLSearchParams();
+  if (params) {
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined) {
+        queryParams.append(key, value.toString());
+      }
+    });
+  }
+
+  const queryString = queryParams.toString();
+  const endpoint = `/materials/review/pending${queryString ? `?${queryString}` : ''}`;
+
+  return fetchApi<{ materials: Material[]; total: number }>(endpoint);
+}
+
+export async function approveMaterial(id: number): Promise<Material> {
+  return fetchApi<Material>(`/materials/${id}/approve`, {
+    method: 'PATCH',
+  });
+}
+
+export async function rejectMaterial(id: number): Promise<Material> {
+  return fetchApi<Material>(`/materials/${id}/reject`, {
+    method: 'PATCH',
+  });
+}
+
 // 获取单个素材详情
 export async function getMaterialById(id: number): Promise<Material> {
   return fetchApi<Material>(`/materials/${id}`);
@@ -79,9 +113,11 @@ export async function createMaterial(data: CreateMaterialData): Promise<Material
   formData.append('description', data.description);
   formData.append('price', data.price.toString());
   formData.append('category', data.category);
-  formData.append('tags', JSON.stringify(data.tags));
+  formData.append('tags', data.tags.join(','));
   formData.append('file', data.file);
-  formData.append('thumbnail', data.thumbnail);
+  if (data.thumbnail) {
+    formData.append('thumbnail', data.thumbnail);
+  }
   
   return uploadFile<Material>('/materials', formData);
 }

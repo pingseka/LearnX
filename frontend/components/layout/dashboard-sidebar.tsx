@@ -9,12 +9,14 @@ import {
   TrendingUp, 
   Settings,
   Upload,
-  ChevronRight
+  ChevronRight,
+  ShieldCheck
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { currentUser, formatPrice } from "@/lib/mock-data"
+import { useAuth } from "@/lib/auth-context"
 
 const sidebarItems = [
   { href: "/dashboard", label: "概览", icon: LayoutDashboard },
@@ -24,8 +26,17 @@ const sidebarItems = [
   { href: "/dashboard/settings", label: "账户设置", icon: Settings },
 ]
 
+const adminSidebarItems = [
+  { href: "/dashboard/review", label: "审核管理", icon: ShieldCheck },
+]
+
 export function DashboardSidebar() {
   const pathname = usePathname()
+  const { user } = useAuth()
+  const visibleSidebarItems =
+    user?.role === "admin"
+      ? [...sidebarItems, ...adminSidebarItems]
+      : sidebarItems
 
   return (
     <aside className="hidden lg:flex flex-col w-64 border-r-2 border-border bg-card">
@@ -53,7 +64,7 @@ export function DashboardSidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 p-4 space-y-1">
-        {sidebarItems.map((item) => {
+        {visibleSidebarItems.map((item) => {
           const isActive = pathname === item.href
           return (
             <Link

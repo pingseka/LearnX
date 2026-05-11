@@ -10,7 +10,8 @@ import {
   TrendingUp, 
   Settings,
   Menu,
-  Loader2
+  Loader2,
+  ShieldCheck
 } from "lucide-react"
 import { Header } from "@/components/layout/header"
 import { DashboardSidebar } from "@/components/layout/dashboard-sidebar"
@@ -31,6 +32,10 @@ const sidebarItems = [
   { href: "/dashboard/settings", label: "账户设置", icon: Settings },
 ]
 
+const adminSidebarItems = [
+  { href: "/dashboard/review", label: "审核管理", icon: ShieldCheck },
+]
+
 export default function DashboardLayout({
   children,
 }: {
@@ -38,7 +43,11 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname()
   const router = useRouter()
-  const { isAuthenticated, isLoading } = useAuth()
+  const { user, isAuthenticated, isLoading } = useAuth()
+  const visibleSidebarItems =
+    user?.role === "admin"
+      ? [...sidebarItems, ...adminSidebarItems]
+      : sidebarItems
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -68,7 +77,7 @@ export default function DashboardLayout({
           <div className="lg:hidden sticky top-16 z-40 bg-background border-b-2 border-border px-4 py-3">
             <div className="flex items-center justify-between">
               <h1 className="font-semibold">
-                {sidebarItems.find((item) => item.href === pathname)?.label || "个人中心"}
+                {visibleSidebarItems.find((item) => item.href === pathname)?.label || "个人中心"}
               </h1>
               <Sheet>
                 <SheetTrigger asChild>
@@ -78,7 +87,7 @@ export default function DashboardLayout({
                 </SheetTrigger>
                 <SheetContent side="left" className="w-72 p-0">
                   <nav className="flex flex-col p-4 space-y-1">
-                    {sidebarItems.map((item) => {
+                    {visibleSidebarItems.map((item) => {
                       const isActive = pathname === item.href
                       return (
                         <Link

@@ -17,7 +17,7 @@ export interface UserProfile {
   id: number;
   name: string;
   email: string;
-  role: 'creator' | 'buyer';
+  role: 'user' | 'admin';
   createdAt: string;
   updatedAt: string;
 }

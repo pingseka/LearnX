@@ -5,6 +5,7 @@ import { useState } from "react"
 import { Search, Menu, X, User, LogOut, Settings, Package, FileText, TrendingUp } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { BrandLogo } from "@/components/brand-logo"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,23 +23,18 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b-2 border-border bg-background">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        {/* Logo - solid blue icon, solid text */}
-        <Link href="/" className="flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-            <span className="text-lg font-bold text-white">研</span>
-          </div>
-          <span className="text-xl font-bold text-foreground">
-            研途共享
-          </span>
-        </Link>
+        <BrandLogo />
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-6">
+          <Link href="/" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+            首页
+          </Link>
           <Link href="/materials" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             资料市场
           </Link>
-          <Link href="/upload" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-            上传资料
+          <Link href="/dashboard/materials" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+            创作者中心
           </Link>
           <Link href="/dashboard" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             个人中心
@@ -59,6 +55,9 @@ export function Header() {
 
         {/* Right Section */}
         <div className="flex items-center gap-3">
+          <Button asChild className="hidden md:inline-flex">
+            <Link href="/upload">发布资料</Link>
+          </Button>
           {isAuthenticated && user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -160,11 +159,14 @@ export function Header() {
               <Link href="/materials" className="px-4 py-2 rounded-lg hover:bg-muted transition-colors" onClick={() => setIsMenuOpen(false)}>
                 资料市场
               </Link>
-              <Link href="/upload" className="px-4 py-2 rounded-lg hover:bg-muted transition-colors" onClick={() => setIsMenuOpen(false)}>
-                上传资料
+              <Link href="/dashboard/materials" className="px-4 py-2 rounded-lg hover:bg-muted transition-colors" onClick={() => setIsMenuOpen(false)}>
+                创作者中心
               </Link>
               <Link href="/dashboard" className="px-4 py-2 rounded-lg hover:bg-muted transition-colors" onClick={() => setIsMenuOpen(false)}>
                 个人中心
+              </Link>
+              <Link href="/upload" className="px-4 py-2 rounded-lg bg-primary text-white transition-colors" onClick={() => setIsMenuOpen(false)}>
+                发布资料
               </Link>
             </nav>
             {!isAuthenticated && (
