@@ -92,13 +92,11 @@ export const materialsController = {
   },
 
   update: [
-    // 文件上传中间件
     upload.fields([
       { name: 'file', maxCount: 1 },
       { name: 'thumbnail', maxCount: 1 }
     ]),
     
-    // 验证请求数据
     body('title').optional().notEmpty().withMessage('请提供标题'),
     body('description').optional().notEmpty().withMessage('请提供描述'),
     body('category').optional().notEmpty().withMessage('请提供分类'),
@@ -106,7 +104,6 @@ export const materialsController = {
     
     async (req: Request, res: Response, next: NextFunction) => {
       try {
-        // 检查验证错误
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
           return res.status(400).json(apiError(errors.array().map(e => e.msg).join('; ')));
@@ -114,6 +111,16 @@ export const materialsController = {
 
         const { id } = req.params;
         const authorId = (req as any).user.userId;
+
+        const existingMaterial = await materialsService.getById(id);
+        if (!existingMaterial) {
+          return res.status(404).json(apiError('资料不存在'));
+        }
+
+        if (existingMaterial.author !== authorId) {
+          return res.status(403).json(apiError('无权修改此资源'));
+        }
+
         const { title, description, category, price, tags } = req.body;
         const file = (req.files as any)?.file?.[0];
         const thumbnail = (req.files as any)?.thumbnail?.[0];
@@ -139,6 +146,15 @@ export const materialsController = {
     try {
       const { id } = req.params;
       const authorId = (req as any).user.userId;
+
+      const existingMaterial = await materialsService.getById(id);
+      if (!existingMaterial) {
+        return res.status(404).json(apiError('资料不存在'));
+      }
+
+      if (existingMaterial.author !== authorId) {
+        return res.status(403).json(apiError('无权删除此资源'));
+      }
 
       const result = await materialsService.delete(id, authorId);
       res.status(200).json(success(result));
