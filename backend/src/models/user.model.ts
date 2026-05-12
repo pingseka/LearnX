@@ -7,11 +7,13 @@ interface UserAttributes {
   password: string;
   name: string;
   role: 'user' | 'admin';
+  loginAttempts: number;
+  lockoutTime: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }
 
-type UserCreationAttributes = Optional<UserAttributes, 'id' | 'role' | 'createdAt' | 'updatedAt'>;
+type UserCreationAttributes = Optional<UserAttributes, 'id' | 'role' | 'loginAttempts' | 'lockoutTime' | 'createdAt' | 'updatedAt'>;
 
 export class User extends Model<UserAttributes, UserCreationAttributes> implements UserAttributes {
   public id!: number;
@@ -19,6 +21,8 @@ export class User extends Model<UserAttributes, UserCreationAttributes> implemen
   public password!: string;
   public name!: string;
   public role!: 'user' | 'admin';
+  public loginAttempts!: number;
+  public lockoutTime!: Date | null;
   public createdAt!: Date;
   public updatedAt!: Date;
 }
@@ -49,6 +53,16 @@ User.init(
     role: {
       type: DataTypes.ENUM('user', 'admin'),
       defaultValue: 'user'
+    },
+    loginAttempts: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+      allowNull: false
+    },
+    lockoutTime: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      defaultValue: null
     },
     createdAt: {
       type: DataTypes.DATE,

@@ -50,19 +50,48 @@ export const authService = {
   },
 
   login: async (data: LoginData) => {
-    // 查找用户
+    const MAX_ATTEMPTS = 5;
+    const LOCKOUT_DURATION = 10 * 60 * 1000;
+
     const user = await User.findOne({ where: { email: data.email } });
     if (!user) {
       throw new Error('邮箱或密码错误');
     }
 
-    // 验证密码
-    const isPasswordValid = await comparePassword(data.password, user.password);
-    if (!isPasswordValid) {
-      throw new Error('邮箱或密码错误');
+    if (user.lockoutTime) {
+      const now = new Date();
+      const lockoutEnd = new Date(user.lockoutTime);
+      if (now < lockoutEnd) {
+        const remainingMinutes = Math.ceil((lockoutEnd.getTime() - now.getTime()) / 60000);
+        throw new Error(`账户已被锁定，请 ${remainingMinutes} 分钟后再试`);
+      } else {
+        user.loginAttempts = 0;
+        user.lockoutTime = null;
+        await user.save();
+      }
     }
 
-    // 生成令牌
+    const isPasswordValid = await comparePassword(data.password, user.password);
+    if (!isPasswordValid) {
+      const newAttempts = user.loginAttempts + 1;
+      if (newAttempts >= MAX_ATTEMPTS) {
+        user.loginAttempts = newAttempts;
+        user.lockoutTime = new Date(Date.now() + LOCKOUT_DURATION);
+        await user.save();
+        throw new Error('账户已被锁定，请10分钟后再试');
+      } else {
+        user.loginAttempts = newAttempts;
+        await user.save();
+        throw new Error(`邮箱或密码错误，还剩 ${MAX_ATTEMPTS - newAttempts} 次尝试机会`);
+      }
+    }
+
+    if (user.loginAttempts > 0 || user.lockoutTime) {
+      user.loginAttempts = 0;
+      user.lockoutTime = null;
+      await user.save();
+    }
+
     const token = generateToken({
       userId: user.id.toString(),
       email: user.email,
