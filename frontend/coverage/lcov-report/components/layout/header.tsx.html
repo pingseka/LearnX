@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/8</span>
+                <span class='fraction'>0/9</span>
             </div>
         
             
@@ -39,14 +39,14 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/6</span>
+                <span class='fraction'>0/7</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/8</span>
+                <span class='fraction'>0/9</span>
             </div>
         
             
@@ -248,7 +248,10 @@
 <a name='L183'></a><a href='#L183'>183</a>
 <a name='L184'></a><a href='#L184'>184</a>
 <a name='L185'></a><a href='#L185'>185</a>
-<a name='L186'></a><a href='#L186'>186</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L186'></a><a href='#L186'>186</a>
+<a name='L187'></a><a href='#L187'>187</a>
+<a name='L188'></a><a href='#L188'>188</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -362,8 +365,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -405,6 +406,9 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -440,6 +444,7 @@ import { useState } from "react"
 import { Search, Menu, X, User, LogOut, Settings, Package, FileText, TrendingUp } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { BrandLogo } from "@/components/brand-logo"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -457,23 +462,18 @@ export function <span class="fstat-no" title="function not covered" >Header(</sp
 <span class="cstat-no" title="statement not covered" >  return (</span>
     &lt;header className="sticky top-0 z-50 w-full border-b-2 border-border bg-background"&gt;
       &lt;div className="container mx-auto flex h-16 items-center justify-between px-4"&gt;
-        {/* Logo - solid blue icon, solid text */}
-        &lt;Link href="/" className="flex items-center gap-2"&gt;
-          &lt;div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary"&gt;
-            &lt;span className="text-lg font-bold text-white"&gt;研&lt;/span&gt;
-          &lt;/div&gt;
-          &lt;span className="text-xl font-bold text-foreground"&gt;
-            研途共享
-          &lt;/span&gt;
-        &lt;/Link&gt;
+        &lt;BrandLogo /&gt;
 &nbsp;
         {/* Desktop Navigation */}
         &lt;nav className="hidden md:flex items-center gap-6"&gt;
+          &lt;Link href="/" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"&gt;
+            首页
+          &lt;/Link&gt;
           &lt;Link href="/materials" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"&gt;
             资料市场
           &lt;/Link&gt;
-          &lt;Link href="/upload" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"&gt;
-            上传资料
+          &lt;Link href="/dashboard/materials" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"&gt;
+            创作者中心
           &lt;/Link&gt;
           &lt;Link href="/dashboard" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"&gt;
             个人中心
@@ -494,6 +494,9 @@ export function <span class="fstat-no" title="function not covered" >Header(</sp
 &nbsp;
         {/* Right Section */}
         &lt;div className="flex items-center gap-3"&gt;
+          &lt;Button asChild className="hidden md:inline-flex"&gt;
+            &lt;Link href="/upload"&gt;发布资料&lt;/Link&gt;
+          &lt;/Button&gt;
           {isAuthenticated &amp;&amp; user ? (
             &lt;DropdownMenu&gt;
               &lt;DropdownMenuTrigger asChild&gt;
@@ -595,11 +598,14 @@ export function <span class="fstat-no" title="function not covered" >Header(</sp
               &lt;Link href="/materials" className="px-4 py-2 rounded-lg hover:bg-muted transition-colors" onClick={<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >setIsMenuOpen(false)}</span>&gt;
                 资料市场
               &lt;/Link&gt;
-              &lt;Link href="/upload" className="px-4 py-2 rounded-lg hover:bg-muted transition-colors" onClick={<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >setIsMenuOpen(false)}</span>&gt;
-                上传资料
+              &lt;Link href="/dashboard/materials" className="px-4 py-2 rounded-lg hover:bg-muted transition-colors" onClick={<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >setIsMenuOpen(false)}</span>&gt;
+                创作者中心
               &lt;/Link&gt;
               &lt;Link href="/dashboard" className="px-4 py-2 rounded-lg hover:bg-muted transition-colors" onClick={<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >setIsMenuOpen(false)}</span>&gt;
                 个人中心
+              &lt;/Link&gt;
+              &lt;Link href="/upload" className="px-4 py-2 rounded-lg bg-primary text-white transition-colors" onClick={<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >setIsMenuOpen(false)}</span>&gt;
+                发布资料
               &lt;/Link&gt;
             &lt;/nav&gt;
             {!isAuthenticated &amp;&amp; (
@@ -625,7 +631,7 @@ export function <span class="fstat-no" title="function not covered" >Header(</sp
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-04-29T02:34:17.950Z
+                at 2026-05-12T09:05:40.922Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
