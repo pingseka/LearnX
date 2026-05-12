@@ -8,12 +8,16 @@ jest.mock('../../src/utils/password');
 jest.mock('../../src/utils/jwt');
 
 describe('authService', () => {
+  const mockSave = jest.fn().mockResolvedValue(undefined);
   const mockUser = {
     id: 1,
     email: 'test@example.com',
     name: 'Test User',
     role: 'user',
-    password: 'hashed-password'
+    password: 'hashed-password',
+    loginAttempts: 0,
+    lockoutTime: null,
+    save: mockSave
   };
 
   const mockToken = 'mock-jwt-token';
