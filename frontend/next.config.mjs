@@ -6,7 +6,9 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  turbopack: {},
+  experimental: {
+    ppr: false,
+  },
 }
 
 export default nextConfig

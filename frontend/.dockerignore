@@ -1,5 +1,5 @@
 node_modules
-dist
+.next
 .env
 .env.example
 *.md
@@ -7,9 +7,9 @@ dist
 .gitignore
 __tests__
 coverage
-sample-materials
-scripts
 .eslintrc.cjs
 jest.config.js
-test-password.js
-database.sqlite
+jest.setup.js
+postcss.config.mjs
+pnpm-lock.yaml
+tsconfig.tsbuildinfo

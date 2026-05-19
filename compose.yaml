@@ -1,12 +1,24 @@
-version: '3.8'
-
 services:
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:3001
+      - NODE_ENV=production
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
   backend:
     build: ./backend
     ports:
-      - '3001:3001'
+      - "3001:3001"
+    volumes:
+      - uploads:/app/uploads
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=development
       - PORT=3001
       - DB_HOST=db
       - DB_PORT=3306
@@ -20,8 +32,11 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    volumes:
-      - uploads:/app/uploads
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
     restart: unless-stopped
 
   db:
@@ -30,11 +45,11 @@ services:
       MYSQL_ROOT_PASSWORD: learnx123
       MYSQL_DATABASE: learnx
     ports:
-      - '3306:3306'
+      - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
-      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost', '-u', 'root', '-plearnx123']
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-plearnx123"]
       interval: 10s
       timeout: 5s
       retries: 5
