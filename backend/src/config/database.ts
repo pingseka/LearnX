@@ -1,20 +1,22 @@
 import { DataTypes, Sequelize } from 'sequelize';
+import { env } from './env';
+import { logger } from '../utils/logger';
 
 // 创建 Sequelize 实例（使用SQLite）
 export const sequelize = new Sequelize({
   dialect: 'sqlite',
-  storage: './database.sqlite',
-  logging: console.log
+  storage: env.DB_STORAGE,
+  logging: (message) => logger.debug('database_query', { query: message })
 });
 
 // 测试数据库连接
 export const connectDB = async () => {
   try {
     await sequelize.authenticate();
-    console.log('SQLite connected successfully');
+    logger.info('database_connected', { dialect: 'sqlite' });
   } catch (error: any) {
-    console.error('SQLite connection error:', error);
-    process.exit(1);
+    logger.error('database_connection_failed', error);
+    throw error;
   }
 };
 
@@ -36,9 +38,9 @@ export const syncDB = async () => {
       }
     }
 
-    console.log('Database synchronized');
+    logger.info('database_synchronized');
   } catch (error) {
-    console.error('Database synchronization error:', error);
-    process.exit(1);
+    logger.error('database_synchronization_failed', error);
+    throw error;
   }
 };

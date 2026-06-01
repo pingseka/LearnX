@@ -1,6 +1,10 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 const API_ORIGIN = API_BASE_URL.replace(/\/api\/?$/, '');
 
+export function getApiUrl(endpoint: string): string {
+  return `${API_BASE_URL}${endpoint}`;
+}
+
 // Unified backend response type
 export interface BackendResponse<T = any> {
   code: number;
@@ -28,7 +32,7 @@ export async function fetchApi<T>(
   const timeoutId = setTimeout(() => controller.abort(), 15000);
 
   try {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    const response = await fetch(getApiUrl(endpoint), {
       ...options,
       headers,
       signal: controller.signal,
@@ -73,7 +77,7 @@ export async function uploadFile<T>(
   const timeoutId = setTimeout(() => controller.abort(), 60000);
 
   try {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    const response = await fetch(getApiUrl(endpoint), {
       method: 'POST',
       headers,
       body: formData,

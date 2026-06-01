@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import ReactMarkdown from 'react-markdown';
+import { getApiUrl } from '@/api';
 
 interface Message {
   id: string;
@@ -51,7 +52,7 @@ export default function ChatPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:3001/api/ai/chat', {
+      const response = await fetch(getApiUrl('/ai/chat'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
