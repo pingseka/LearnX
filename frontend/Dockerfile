@@ -17,12 +17,11 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next ./.next
+RUN addgroup -g 101 -S appgroup && adduser -u 100 -S appuser -G appgroup
 
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup \
-    && chown -R appuser:appgroup /app
+COPY --chown=appuser:appgroup --from=builder /app/node_modules ./node_modules
+COPY --chown=appuser:appgroup --from=builder /app/public ./public
+COPY --chown=appuser:appgroup --from=builder /app/.next ./.next
 
 USER appuser
 

@@ -38,4 +38,4 @@ jobs:
           DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
         run: |
           ssh -p "${DEPLOY_PORT:-22}" "$DEPLOY_USER@$DEPLOY_HOST" \
-            "cd '$DEPLOY_PATH' && git pull --ff-only origin main && sh deploy/update.sh"
+            "cd '$DEPLOY_PATH' && git pull --ff-only origin main && sh deploy/update-host-nginx.sh"

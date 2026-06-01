@@ -12,13 +12,14 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
+RUN addgroup -g 101 -S appgroup && adduser -u 100 -S appuser -G appgroup
 
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup \
-    && mkdir -p /app/data /app/uploads \
-    && chown -R appuser:appgroup /app
+COPY --chown=appuser:appgroup --from=builder /app/dist ./dist
+COPY --chown=appuser:appgroup --from=builder /app/node_modules ./node_modules
+COPY --chown=appuser:appgroup --from=builder /app/package.json ./package.json
+
+RUN mkdir -p /app/data /app/uploads \
+    && chown appuser:appgroup /app/data /app/uploads
 
 USER appuser
 

@@ -27,9 +27,12 @@ volume 中，更新容器不会丢失数据。
 | 文件 | 用途 |
 | --- | --- |
 | `compose.prod.yaml` | 生产容器编排 |
+| `compose.host-nginx.yaml` | 宿主机已有 Nginx 时使用的 Compose 覆盖配置 |
 | `deploy/nginx/templates/default.conf.template` | Nginx HTTPS 网关 |
+| `deploy/nginx/host/learnx.conf.template` | 宿主机 Nginx 站点模板 |
 | `deploy/.env.production.example` | 生产环境变量模板 |
 | `deploy/update.sh` | 服务器拉取镜像并更新容器 |
+| `deploy/update-host-nginx.sh` | 在宿主机 Nginx 场景本地构建并更新容器 |
 | `deploy/renew-cert.sh` | 续期 HTTPS 证书并重启网关 |
 | `.github/workflows/docker.yml` | 推送 `main` 后构建镜像 |
 | `.github/workflows/deploy.yml` | 镜像构建成功后 SSH 自动部署 |
@@ -62,10 +65,13 @@ VERSION=latest
 ```bash
 openssl rand -hex 32 > secrets/jwt_secret.txt
 openssl rand -hex 32 > secrets/monitoring_token.txt
-chmod 600 secrets/*.txt
+sudo chown 100:101 secrets/*.txt
+sudo chmod 400 secrets/*.txt
 ```
 
-敏感文件已被 `.gitignore` 排除，不能提交到 GitHub。
+后端容器固定使用 `100:101` 身份运行。Compose 将敏感文件以只读方式
+挂载到容器，宿主机上的部署用户不需要读取权限。敏感文件已被
+`.gitignore` 排除，不能提交到 GitHub。
 
 ### 3.2 获取 HTTPS 证书
 
@@ -94,7 +100,29 @@ echo "你的 GitHub PAT" | docker login ghcr.io -u 你的GitHub用户名 --passw
 sh deploy/update.sh
 ```
 
-## 4. 环境变量
+## 4. 宿主机已有 Nginx
+
+如果腾讯云服务器已经使用宿主机 Nginx 承载其他域名，不要启动
+`compose.prod.yaml` 中的 `gateway`，否则会与宿主机的 `80` 和 `443`
+端口冲突。使用覆盖配置将 LearnX 仅发布到回环地址：
+
+```bash
+sh deploy/update-host-nginx.sh
+```
+
+根据模板生成 Nginx 站点配置，然后申请证书：
+
+```bash
+envsubst '${DOMAIN}' \
+  < deploy/nginx/host/learnx.conf.template \
+  | sudo tee /etc/nginx/sites-available/learnx >/dev/null
+sudo ln -s /etc/nginx/sites-available/learnx /etc/nginx/sites-enabled/learnx
+sudo nginx -t
+sudo systemctl reload nginx
+sudo certbot --nginx -d 你的域名
+```
+
+## 5. 环境变量
 
 | 配置 | 位置 | 说明 |
 | --- | --- | --- |
@@ -108,13 +136,14 @@ sh deploy/update.sh
 例如用户访问 `https://你的域名/api/materials` 时，请求会先到 Nginx，
 再转发到后端容器。浏览器不会访问用户自己电脑上的 `localhost`。
 
-## 5. 自动部署
+## 6. 自动部署
 
 推送到 `main` 后：
 
 1. `docker.yml` 构建前端和后端镜像并推送到 GHCR。
 2. 镜像安全扫描通过后，`deploy.yml` 通过 SSH 登录腾讯云服务器。
-3. 服务器执行 `git pull --ff-only origin main` 和 `sh deploy/update.sh`。
+3. 服务器执行 `git pull --ff-only origin main` 和
+   `sh deploy/update-host-nginx.sh`，在回环端口更新容器。
 
 需要在 GitHub 仓库的 Actions secrets 配置：
 
@@ -127,7 +156,7 @@ sh deploy/update.sh
 | `DEPLOY_KNOWN_HOSTS` | 服务器 SSH 主机指纹 |
 | `DEPLOY_PATH` | 服务器项目绝对路径 |
 
-## 6. 验证
+## 7. 验证
 
 ```bash
 docker compose --env-file .env -f compose.prod.yaml ps
@@ -145,7 +174,7 @@ curl -H "Authorization: Bearer 你的监控令牌" https://你的域名/metrics
 }
 ```
 
-## 7. HTTPS 续期
+## 8. HTTPS 续期
 
 测试续期：
 

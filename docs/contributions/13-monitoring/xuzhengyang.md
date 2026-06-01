@@ -27,7 +27,7 @@
 
 ## PR 链接
 
-- 待提交后补充
+- PR #11: https://github.com/pingseka/LearnX/pull/11
 
 ## 遇到的问题和解决
 
