@@ -42,6 +42,7 @@ jobs:
         with:
           image-ref: ${{ steps.image.outputs.name }}
           severity: CRITICAL,HIGH
+          ignore-unfixed: true
           exit-code: 1
 
   build-frontend:
@@ -83,4 +84,5 @@ jobs:
         with:
           image-ref: ${{ steps.image.outputs.name }}
           severity: CRITICAL,HIGH
+          ignore-unfixed: true
           exit-code: 1

@@ -9,7 +9,7 @@ COPY package*.json ./
 RUN npm config set registry https://registry.npmmirror.com && npm ci
 
 COPY . .
-RUN npm run build
+RUN npm run build && npm prune --omit=dev
 
 FROM node:20-alpine
 
