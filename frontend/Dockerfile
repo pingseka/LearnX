@@ -23,6 +23,8 @@ COPY --chown=appuser:appgroup --from=builder /app/node_modules ./node_modules
 COPY --chown=appuser:appgroup --from=builder /app/public ./public
 COPY --chown=appuser:appgroup --from=builder /app/.next ./.next
 
+RUN npm uninstall -g npm
+
 USER appuser
 
 EXPOSE 3000
@@ -30,4 +32,4 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
     CMD wget -qO- http://localhost:3000 || exit 1
 
-CMD ["npx", "next", "start"]
+CMD ["node", "node_modules/next/dist/bin/next", "start"]

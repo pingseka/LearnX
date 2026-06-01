@@ -19,7 +19,8 @@ COPY --chown=appuser:appgroup --from=builder /app/node_modules ./node_modules
 COPY --chown=appuser:appgroup --from=builder /app/package.json ./package.json
 
 RUN mkdir -p /app/data /app/uploads \
-    && chown appuser:appgroup /app/data /app/uploads
+    && chown appuser:appgroup /app/data /app/uploads \
+    && npm uninstall -g npm
 
 USER appuser
 
