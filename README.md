@@ -66,6 +66,7 @@ LearnX/
 - [后端说明](docs/backend.md) - 后端模块功能、技术选型、目录结构、运行方式
 - [API 文档](docs/api.md) - 接口说明
 - [部署文档](docs/deployment.md) - 部署说明
+- [监控文档](docs/monitoring.md) - JSON 日志、健康检查和基础指标
 - [个人贡献说明](docs/contributions/) - 团队成员个人贡献
 
 ## 设计资源
@@ -74,11 +75,12 @@ LearnX/
 - **设计链接**：[https://v0.app/chat/-my0oYyN2GRT?ref=BHS4JI](https://v0.app/chat/-my0oYyN2GRT?ref=BHS4JI)
 - **设计说明**：详见 docs/design/design-spec.md
 
-## 技术栈（初步规划）
+## 技术栈
 
 - 前端：Next.js + React + TypeScript + Tailwind CSS
 - 后端：Node.js + Express + TypeScript + Sequelize
-- 数据库：MySQL（支持事务，保证订单 / 抽成数据一致性）
+- 数据库：SQLite + Docker volume 持久化
+- 部署：腾讯云服务器 + Docker Compose + Nginx HTTPS
 
 ## 分工说明
 

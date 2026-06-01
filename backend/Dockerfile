@@ -17,6 +17,7 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
 
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup \
+    && mkdir -p /app/data /app/uploads \
     && chown -R appuser:appgroup /app
 
 USER appuser

@@ -1,7 +1,6 @@
 import express from 'express';
 import fs from 'fs';
 import path from 'path';
-import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
 import { env } from './config/env';
 import { connectDB, syncDB } from './config/database';
@@ -12,11 +11,17 @@ import materialsRoutes from './routes/materials.routes';
 import ordersRoutes from './routes/orders.routes';
 import earningsRoutes from './routes/earnings.routes';
 import aiRoutes from './routes/ai.routes';
+import monitoringRoutes from './routes/monitoring.routes';
+import { requestLoggerMiddleware } from './middleware/request-logger.middleware';
+import { logger } from './utils/logger';
 
 const app = express();
 
+// 腾讯云入口只有一层 Nginx，Express 可读取真实客户端 IP。
+app.set('trust proxy', 1);
+
 // 确保 uploads 目录存在
-const uploadsDir = path.join(__dirname, '../uploads');
+const uploadsDir = path.resolve(env.UPLOAD_DIR);
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
@@ -30,6 +35,11 @@ const limiter = rateLimit({
     msg: 'Too many requests, please try again later',
   },
 });
+
+app.use(requestLoggerMiddleware);
+
+// 资料文件需要允许浏览器预览，不能套用 API 的 frame 限制。
+app.use('/uploads', express.static(uploadsDir));
 
 // 安全 HTTP 头中间件
 app.use((req, res, next) => {
@@ -47,16 +57,10 @@ app.use((req, res, next) => {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(corsMiddleware);
-app.use(morgan('dev'));
 app.use('/api', limiter);
 
-// 静态文件服务
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
-
-// 健康检查端点
-app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
-});
+// 监控端点
+app.use(monitoringRoutes);
 
 // 路由
 app.use('/api/auth', authRoutes);
@@ -79,10 +83,10 @@ const startServer = async () => {
     
     // 启动服务器
     app.listen(env.PORT, () => {
-      console.log(`Server is running on port ${env.PORT}`);
+      logger.info('server_started', { port: env.PORT });
     });
   } catch (error) {
-    console.error('Error starting server:', error);
+    logger.error('server_start_failed', error);
     process.exit(1);
   }
 };

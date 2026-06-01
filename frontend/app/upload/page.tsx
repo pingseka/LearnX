@@ -18,6 +18,7 @@ import {
   X,
 } from "lucide-react"
 import { createMaterial } from "@/api/materials"
+import { getApiUrl } from "@/api"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -121,7 +122,7 @@ export default function UploadPage() {
 
     try {
       const response = await fetch(
-        "http://localhost:3001/api/ai/generate-description",
+        getApiUrl("/ai/generate-description"),
         {
           method: "POST",
           headers: {

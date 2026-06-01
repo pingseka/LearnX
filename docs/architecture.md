@@ -10,8 +10,8 @@
 | --- | --- | --- |
 | 前端框架 | Next.js + React + TypeScript | 已完成响应式页面和组件化开发，适合中小型课程项目快速迭代 |
 | 后端框架 | Node.js + Express + TypeScript | 已完成后端项目初始化与模块划分，接口开发直接、生态成熟 |
-| 数据库 | MySQL 8.0 | 支持事务、外键和关系建模，适合订单、抽成、收益等业务场景 |
-| 部署方式 | Docker Compose | 便于统一管理前端、后端、数据库服务，适合后续部署扩展 |
+| 数据库 | SQLite + Docker volume | 当前规模下部署简单，容器更新后数据仍可保留 |
+| 部署方式 | Docker Compose + Nginx | 统一管理前端、后端和 HTTPS 网关 |
 
 ## 3. 前端架构
 
@@ -74,7 +74,7 @@ flowchart TD
 | Node.js | 22.20.0 | 运行环境 |
 | Express | 4.18.2 | Web 框架 |
 | TypeScript | 5.3.2 | 类型系统 |
-| MySQL | 8.0+ | 数据库 |
+| SQLite | Sequelize 内置支持 | 数据库 |
 | Sequelize | 7.6.3 | ORM 框架 |
 | JWT | 9.0.2 | 用户认证 |
 | Multer | 1.4.5 | 文件上传 |
@@ -87,7 +87,7 @@ flowchart TD
 1. 路由层：负责接口注册和请求分发。
 2. 控制器层：负责请求参数处理和响应封装。
 3. 服务层：负责认证、资料、订单、收益等业务逻辑。
-4. 数据模型层：负责 MySQL 数据持久化和表关系映射。
+4. 数据模型层：负责 SQLite 数据持久化和表关系映射。
 
 ### 4.3 后端目录结构
 
@@ -126,7 +126,7 @@ flowchart TD
     C --> D[Controller 控制器]
     D --> E[Service 服务层]
     E --> F[Sequelize Model]
-    F --> G[(MySQL)]
+    F --> G[(SQLite)]
     D --> H[文件上传处理]
 ```
 
@@ -155,7 +155,7 @@ sequenceDiagram
     participant U as 用户
     participant F as 前端
     participant B as 后端
-    participant DB as MySQL
+    participant DB as SQLite
 
     U->>F: 浏览资料并点击购买
     F->>B: 请求资料详情/创建订单

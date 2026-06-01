@@ -1,9 +1,30 @@
 import dotenv from 'dotenv';
+import fs from 'fs';
 
-const result = dotenv.config();
-if (result.error) {
-  console.error('Error loading .env file:', result.error);
-}
+dotenv.config();
+
+const readSecret = (name: string) => {
+  const value = process.env[name];
+  const file = process.env[`${name}_FILE`];
+
+  if (value && file) {
+    throw new Error(`${name} and ${name}_FILE cannot both be set`);
+  }
+
+  if (file) {
+    return fs.readFileSync(file, 'utf8').trim();
+  }
+
+  return value || '';
+};
+
+const requireProductionSecret = (name: string, value: string) => {
+  if (process.env.NODE_ENV === 'production' && !value) {
+    throw new Error(`${name} is required in production`);
+  }
+
+  return value;
+};
 
 const generateDevSecret = (): string => {
   if (process.env.NODE_ENV === 'production') {
@@ -19,15 +40,19 @@ const generateDevSecret = (): string => {
 export const env = {
   PORT: process.env.PORT || 3001,
   NODE_ENV: process.env.NODE_ENV || 'development',
-  DB_HOST: process.env.DB_HOST || 'localhost',
-  DB_PORT: parseInt(process.env.DB_PORT || '3306'),
-  DB_USER: process.env.DB_USER || 'root',
-  DB_PASSWORD: process.env.DB_PASSWORD || '',
-  DB_NAME: process.env.DB_NAME || 'material_management',
-  JWT_SECRET: process.env.JWT_SECRET || generateDevSecret(),
+  DB_STORAGE: process.env.DB_STORAGE || './database.sqlite',
+  JWT_SECRET: requireProductionSecret(
+    'JWT_SECRET',
+    readSecret('JWT_SECRET') || generateDevSecret()
+  ),
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '7d',
-  UPLOAD_DIR: process.env.UPLOAD_DIR || './public/uploads',
+  UPLOAD_DIR: process.env.UPLOAD_DIR || './uploads',
   MAX_FILE_SIZE: parseInt(process.env.MAX_FILE_SIZE || '52428800'),
+  APP_VERSION: process.env.APP_VERSION || '1.0.0',
+  MONITORING_TOKEN: requireProductionSecret(
+    'MONITORING_TOKEN',
+    readSecret('MONITORING_TOKEN')
+  ),
   AI_PROVIDER: process.env.AI_PROVIDER || 'deepseek',
   AI_API_KEY: process.env.AI_API_KEY || '',
   AI_BASE_URL: process.env.AI_BASE_URL || 'https://api.deepseek.com/v1',
