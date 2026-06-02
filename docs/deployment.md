@@ -110,6 +110,11 @@ sh deploy/update.sh
 sh deploy/update-host-nginx.sh
 ```
 
+`compose.host-nginx.yaml` 将前端和后端分别限制为 `256 MiB` 内存和
+`0.5` CPU，并只监听 `127.0.0.1:3100` 与 `127.0.0.1:3101`。
+更新脚本还会将 Compose 构建并发限制为 `1`，避免在共享服务器上同时
+构建前端和后端。
+
 根据模板生成 Nginx 站点配置，然后申请证书：
 
 ```bash

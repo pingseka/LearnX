@@ -3,6 +3,8 @@ set -eu
 
 cd "$(dirname "$0")/.."
 
+export COMPOSE_PARALLEL_LIMIT=1
+
 docker compose \
   --env-file .env \
   -f compose.prod.yaml \
