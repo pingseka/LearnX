@@ -16,6 +16,7 @@ import {
 import { cn } from "@/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
+import { getAssetUrl } from "@/api"
 import { getEarningsStats } from "@/api/earnings"
 import { formatCurrency } from "@/lib/catalog"
 import { useAuth } from "@/lib/auth-context"
@@ -42,6 +43,7 @@ export function DashboardSidebar() {
       : sidebarItems
   const displayName = user?.name || "用户"
   const accountLabel = user?.role === "admin" ? "管理员账号" : "学习账号"
+  const avatarUrl = getAssetUrl(user?.avatarUrl)
 
   useEffect(() => {
     async function fetchBalance() {
@@ -64,7 +66,7 @@ export function DashboardSidebar() {
       <div className="p-6 border-b-2 border-border">
         <div className="flex items-center gap-3 mb-4">
           <Avatar className="h-12 w-12">
-            <AvatarImage src="" alt={displayName} />
+            {avatarUrl && <AvatarImage src={avatarUrl} alt={displayName} />}
             <AvatarFallback className="bg-primary text-white">
               {displayName.charAt(0)}
             </AvatarFallback>
