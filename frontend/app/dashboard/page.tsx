@@ -37,11 +37,12 @@ function getEarningMaterialTitle(earning: EarningsDetail) {
 }
 
 function getEarningBuyerName(earning: EarningsDetail) {
-  return (
-    earning.order?.buyer?.name ||
-    earning.order?.buyer?.email ||
-    "购买用户"
-  )
+  const buyer = earning.order?.buyer
+  return buyer?.name || "购买用户"
+}
+
+function getEarningMaterialId(earning: EarningsDetail) {
+  return earning.order?.items?.[0]?.material?.id || earning.materialId
 }
 
 export default function DashboardPage() {
@@ -127,9 +128,9 @@ export default function DashboardPage() {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatsCard
-          title="账户余额"
+          title="账户收益"
           value={formatCurrency(balance)}
-          description="可提现金额"
+          description="订单结算后金额"
           icon={Wallet}
           color="bg-blue-500"
         />
@@ -137,7 +138,7 @@ export default function DashboardPage() {
           title="累计收益"
           value={formatCurrency(totalEarningsAmount)}
           icon={TrendingUp}
-          description="沙盒订单收益"
+          description="作者收益记录"
           color="bg-emerald-500"
         />
         <StatsCard
@@ -175,11 +176,20 @@ export default function DashboardPage() {
                 {recentEarnings.map((earning) => (
                   <div key={earning.id} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm truncate">
-                        {getEarningMaterialTitle(earning)}
-                      </p>
+                      {getEarningMaterialId(earning) ? (
+                        <Link
+                          href={`/materials/${getEarningMaterialId(earning)}`}
+                          className="block truncate text-sm font-medium hover:text-primary"
+                        >
+                          {getEarningMaterialTitle(earning)}
+                        </Link>
+                      ) : (
+                        <p className="font-medium text-sm truncate">
+                          {getEarningMaterialTitle(earning)}
+                        </p>
+                      )}
                       <p className="text-xs text-muted-foreground">
-                        {getEarningBuyerName(earning)} 购买 · {formatDate(earning.createdAt)}
+                        订单 #{earning.orderId} · {getEarningBuyerName(earning)} 购买 · {formatDate(earning.createdAt)}
                       </p>
                     </div>
                     <span className="font-semibold text-green-600 shrink-0 ml-4">
@@ -260,7 +270,7 @@ export default function DashboardPage() {
                 <div className="h-10 w-10 mx-auto rounded-xl bg-emerald-500 flex items-center justify-center mb-2">
                   <Wallet className="h-5 w-5 text-white" />
                 </div>
-                <span className="text-sm font-medium">申请提现</span>
+                <span className="text-sm font-medium">收益明细</span>
               </div>
             </Link>
             <Link href="/materials">

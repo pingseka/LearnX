@@ -1,12 +1,17 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import Link from "next/link"
 import {
   CheckCircle2,
   Clock3,
+  Download,
+  Eye,
+  ExternalLink,
   ShieldCheck,
   XCircle,
 } from "lucide-react"
+import { getAssetUrl } from "@/api"
 import {
   approveMaterial,
   getPendingReviewMaterials,
@@ -42,9 +47,12 @@ function getAuthorName(material: Material) {
   return (
     material.author?.name ||
     material.author?.username ||
-    material.author?.email ||
     "未知用户"
   )
+}
+
+function getAuthorLabel(material: Material) {
+  return getAuthorName(material)
 }
 
 export default function ReviewPage() {
@@ -153,6 +161,8 @@ export default function ReviewPage() {
         <div className="space-y-4">
           {materials.map((material) => {
             const category = asCategory(material.category)
+            const fileUrl = getAssetUrl(material.fileUrl)
+
             return (
               <Card key={material.id}>
                 <CardContent className="p-4 md:p-5">
@@ -183,7 +193,19 @@ export default function ReviewPage() {
                         {material.description}
                       </p>
                       <div className="mt-3 flex flex-wrap gap-4 text-sm text-slate-500">
-                        <span>作者：{getAuthorName(material)}</span>
+                        <span>
+                          作者：
+                          {material.author?.id ? (
+                            <Link
+                              className="text-primary hover:underline"
+                              href={`/authors/${material.author.id}`}
+                            >
+                              {getAuthorLabel(material)}
+                            </Link>
+                          ) : (
+                            getAuthorLabel(material)
+                          )}
+                        </span>
                         <span>定价：{formatPrice(Number(material.price))}</span>
                         <span>
                           上传：
@@ -191,6 +213,30 @@ export default function ReviewPage() {
                             "zh-CN"
                           )}
                         </span>
+                      </div>
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        <Button variant="outline" size="sm" asChild>
+                          <Link href={`/materials/${material.id}`}>
+                            <ExternalLink className="mr-2 h-4 w-4" />
+                            查看资料详情
+                          </Link>
+                        </Button>
+                        {fileUrl && (
+                          <>
+                            <Button variant="outline" size="sm" asChild>
+                              <a href={fileUrl} target="_blank" rel="noreferrer">
+                                <Eye className="mr-2 h-4 w-4" />
+                                预览原文件
+                              </a>
+                            </Button>
+                            <Button variant="outline" size="sm" asChild>
+                              <a href={fileUrl} download>
+                                <Download className="mr-2 h-4 w-4" />
+                                下载原文件
+                              </a>
+                            </Button>
+                          </>
+                        )}
                       </div>
                     </div>
                     <div className="flex gap-2 lg:w-32 lg:flex-col">

@@ -10,8 +10,8 @@ export interface EarningsStats {
 
 export interface EarningsDetail {
   id: number;
-  materialId: number;
-  material: {
+  materialId?: number;
+  material?: {
     id: number;
     title: string;
   };
@@ -21,7 +21,6 @@ export interface EarningsDetail {
     buyer?: {
       id: number;
       name?: string;
-      email?: string;
     };
     items?: Array<{
       material?: {

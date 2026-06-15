@@ -41,7 +41,7 @@ export function DashboardSidebar() {
       ? [...sidebarItems, ...adminSidebarItems]
       : sidebarItems
   const displayName = user?.name || "用户"
-  const displayEmail = user?.email || "未登录"
+  const accountLabel = user?.role === "admin" ? "管理员账号" : "学习账号"
 
   useEffect(() => {
     async function fetchBalance() {
@@ -71,11 +71,11 @@ export function DashboardSidebar() {
           </Avatar>
           <div>
             <p className="font-semibold">{displayName}</p>
-            <p className="text-xs text-muted-foreground">{displayEmail}</p>
+            <p className="text-xs text-muted-foreground">{accountLabel}</p>
           </div>
         </div>
         <div className="p-3 bg-blue-50 rounded-lg">
-          <p className="text-xs text-muted-foreground mb-1">账户余额</p>
+          <p className="text-xs text-muted-foreground mb-1">账户收益</p>
           <p className="text-xl font-bold text-primary">
             {formatCurrency(balance)}
           </p>

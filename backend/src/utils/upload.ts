@@ -3,14 +3,14 @@ import fs from 'fs';
 import path from 'path';
 import { env } from '../config/env';
 
-const uploadDir = path.join(__dirname, '../../uploads');
+const uploadDir = path.resolve(env.UPLOAD_DIR);
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, env.UPLOAD_DIR);
+    cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);

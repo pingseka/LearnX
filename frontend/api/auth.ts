@@ -1,4 +1,4 @@
-import { fetchApi } from './index';
+import { fetchApi, uploadFile } from './index';
 
 // 认证相关类型
 export interface RegisterData {
@@ -17,6 +17,7 @@ export interface UserProfile {
   id: number;
   name: string;
   email: string;
+  avatarUrl?: string | null;
   role: 'user' | 'admin';
   createdAt: string;
   updatedAt: string;
@@ -46,6 +47,29 @@ export async function login(data: LoginData): Promise<AuthResponse> {
 // 获取个人资料函数
 export async function getProfile(): Promise<UserProfile> {
   return fetchApi<UserProfile>('/auth/profile');
+}
+
+export async function updateProfile(data: { name: string }): Promise<UserProfile> {
+  return fetchApi<UserProfile>('/auth/profile', {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function uploadAvatar(file: File): Promise<UserProfile> {
+  const formData = new FormData();
+  formData.append('avatar', file);
+  return uploadFile<UserProfile>('/auth/avatar', formData);
+}
+
+export async function changePassword(data: {
+  currentPassword: string;
+  newPassword: string;
+}): Promise<{ message: string }> {
+  return fetchApi<{ message: string }>('/auth/password', {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
 }
 
 // 保存token到本地存储

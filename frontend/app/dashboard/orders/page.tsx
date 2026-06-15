@@ -32,7 +32,11 @@ function getOrderMaterial(order: Order) {
 
 function getSellerName(order: Order) {
   const author = getOrderMaterial(order)?.author
-  return author?.name || author?.email || "资料作者"
+  return author?.name || "资料作者"
+}
+
+function getSellerId(order: Order) {
+  return getOrderMaterial(order)?.author?.id
 }
 
 export default function OrdersPage() {
@@ -118,7 +122,18 @@ export default function OrdersPage() {
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="text-muted-foreground">{getSellerName(order)}</TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {getSellerId(order) ? (
+                        <Link
+                          href={`/authors/${getSellerId(order)}`}
+                          className="hover:text-primary hover:underline"
+                        >
+                          {getSellerName(order)}
+                        </Link>
+                      ) : (
+                        getSellerName(order)
+                      )}
+                    </TableCell>
                     <TableCell className="font-semibold">{formatPrice(order.totalAmount)}</TableCell>
                     <TableCell>
                       <Badge
@@ -176,7 +191,19 @@ export default function OrdersPage() {
                     <p className="font-medium line-clamp-2 mb-1">
                       {material?.title || `订单 #${order.id}`}
                     </p>
-                    <p className="text-xs text-muted-foreground">卖家: {getSellerName(order)}</p>
+                    <p className="text-xs text-muted-foreground">
+                      卖家:{" "}
+                      {getSellerId(order) ? (
+                        <Link
+                          href={`/authors/${getSellerId(order)}`}
+                          className="text-primary hover:underline"
+                        >
+                          {getSellerName(order)}
+                        </Link>
+                      ) : (
+                        getSellerName(order)
+                      )}
+                    </p>
                   </div>
                 </div>
 

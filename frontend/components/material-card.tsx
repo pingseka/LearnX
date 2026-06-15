@@ -20,6 +20,7 @@ interface MaterialCardData {
   salesCount?: number
   uploaderName?: string
   author?: {
+    id?: number
     name?: string
     username?: string
     email?: string
@@ -43,7 +44,6 @@ export function MaterialCard({ material }: MaterialCardProps) {
     material.uploaderName ||
     material.author?.name ||
     material.author?.username ||
-    material.author?.email ||
     "资料作者"
 
   return (

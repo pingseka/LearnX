@@ -166,7 +166,9 @@ describe('UploadPage', () => {
       ) as HTMLTextAreaElement;
       expect(description.value).toContain('2026考研政治马原核心笔记');
     });
-    expect(screen.getByText('网络失败')).toBeInTheDocument();
+    expect(
+      screen.getByText('已使用本地模板生成描述，可继续修改。')
+    ).toBeInTheDocument();
   });
 
   test('validates price range before confirm step', () => {
@@ -192,7 +194,7 @@ describe('UploadPage', () => {
     expect(nextButton).toBeDisabled();
   });
 
-  test('shows sandbox income preview', () => {
+  test('shows income preview', () => {
     render(<UploadPage />);
     uploadAndGoToInfo();
     fillInfoAndGoToPrice();

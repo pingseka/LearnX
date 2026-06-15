@@ -13,7 +13,6 @@ export interface OrderItem {
     author?: {
       id: number;
       name?: string;
-      email?: string;
     };
   };
   quantity: number;
@@ -26,7 +25,6 @@ export interface Order {
   buyer?: {
     id: number;
     name?: string;
-    email?: string;
   };
   totalAmount: number;
   status: 'pending' | 'completed' | 'cancelled';

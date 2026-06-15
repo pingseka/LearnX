@@ -71,7 +71,7 @@ export const earningsService = {
             {
               model: User,
               as: 'buyer',
-              attributes: ['id', 'name', 'email']
+              attributes: ['id', 'name']
             },
             {
               model: OrderItem,

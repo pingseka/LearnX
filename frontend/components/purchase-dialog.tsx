@@ -61,9 +61,9 @@ export function PurchaseDialog({ material, open, onOpenChange, onSuccess }: Purc
             <div className="h-16 w-16 rounded-full bg-green-100 flex items-center justify-center mb-4">
               <Check className="h-8 w-8 text-green-600" />
             </div>
-            <h3 className="text-xl font-semibold mb-2">沙盒购买成功</h3>
+            <h3 className="text-xl font-semibold mb-2">支付成功</h3>
             <p className="text-muted-foreground text-center">
-              订单已写入数据库，可在个人中心查看和下载资料。
+              订单已完成，可在个人中心查看订单并下载资料。
             </p>
           </div>
         </DialogContent>
@@ -76,7 +76,9 @@ export function PurchaseDialog({ material, open, onOpenChange, onSuccess }: Purc
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>确认购买</DialogTitle>
-          <DialogDescription>课堂沙盒模式会直接创建已完成订单</DialogDescription>
+          <DialogDescription>
+            课程演示环境会完成订单并同步更新作者收益
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6 py-4">
@@ -95,7 +97,7 @@ export function PurchaseDialog({ material, open, onOpenChange, onSuccess }: Purc
           <div className="flex items-start gap-2 rounded-lg bg-blue-50 p-3 text-sm leading-6 text-blue-700">
             <Info className="mt-0.5 h-4 w-4 shrink-0" />
             <p>
-              这里不接真实微信或支付宝。点击确认后，系统会写入一笔已完成订单，并给作者生成 90% 的沙盒收益。
+              当前课程项目无需提前充值。点击确认支付后，系统会生成已完成订单，并按 90% 记录作者收益。
             </p>
           </div>
 
@@ -121,7 +123,7 @@ export function PurchaseDialog({ material, open, onOpenChange, onSuccess }: Purc
                 支付中...
               </>
             ) : (
-              `确认沙盒购买 ${formatPrice(material.price)}`
+              `确认支付 ${formatPrice(material.price)}`
             )}
           </Button>
         </DialogFooter>

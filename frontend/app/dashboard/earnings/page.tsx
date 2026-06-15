@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import Link from "next/link"
 import {
   ArrowDownToLine,
   FileText,
@@ -36,11 +37,12 @@ function getMaterialTitle(earning: EarningsDetail) {
 }
 
 function getBuyerName(earning: EarningsDetail) {
-  return (
-    earning.order?.buyer?.name ||
-    earning.order?.buyer?.email ||
-    "购买用户"
-  )
+  const buyer = earning.order?.buyer
+  return buyer?.name || "购买用户"
+}
+
+function getMaterialId(earning: EarningsDetail) {
+  return earning.order?.items?.[0]?.material?.id || earning.materialId
 }
 
 export default function EarningsPage() {
@@ -94,31 +96,31 @@ export default function EarningsPage() {
         <div>
           <h1 className="text-2xl font-bold">收益管理</h1>
           <p className="text-muted-foreground">
-            查看真实订单带来的沙盒收益记录
+            查看订单结算后的作者收益记录
           </p>
         </div>
         <Dialog>
           <DialogTrigger asChild>
             <Button className="self-start bg-primary hover:bg-blue-600">
               <ArrowDownToLine className="mr-2 h-4 w-4" />
-              申请提现
+              结算说明
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>沙盒项目暂不支持真实提现</DialogTitle>
+              <DialogTitle>项目结算说明</DialogTitle>
               <DialogDescription>
-                当前收益只用于课堂演示，不会向银行卡、微信或支付宝打款。
+                当前课程项目已实现订单和作者收益记录，暂未接入银行卡、微信或支付宝打款。
               </DialogDescription>
             </DialogHeader>
             <div className="rounded-lg bg-blue-50 p-4 text-sm leading-6 text-blue-700">
               <div className="mb-2 flex items-center gap-2 font-medium">
                 <Info className="h-4 w-4" />
-                为什么这里不做真提现？
+                收益是怎么计算的？
               </div>
               <p>
-                例如用户购买 10 元资料，系统会记录作者收益 9 元。
-                这笔钱只存在本地数据库，方便演示订单和分成流程，不会产生真实资金结算。
+                例如用户购买 10 元资料，平台按 10% 作为服务费，作者收益记录为 9 元。
+                验收时重点看订单是否完成、资料是否可下载、作者收益是否同步增加。
               </p>
             </div>
           </DialogContent>
@@ -135,9 +137,9 @@ export default function EarningsPage() {
         <>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <StatsCard
-              title="可提现余额"
+              title="账户收益"
               value={formatCurrency(stats.total)}
-              description="沙盒可提现金额"
+              description="订单结算后累计金额"
               icon={Wallet}
               color="bg-blue-500"
             />
@@ -178,11 +180,20 @@ export default function EarningsPage() {
                           <FileText className="h-5 w-5 text-primary" />
                         </div>
                         <div className="min-w-0">
-                          <p className="truncate font-medium">
-                            {getMaterialTitle(earning)}
-                          </p>
+                          {getMaterialId(earning) ? (
+                            <Link
+                              href={`/materials/${getMaterialId(earning)}`}
+                              className="block truncate font-medium text-slate-950 hover:text-primary"
+                            >
+                              {getMaterialTitle(earning)}
+                            </Link>
+                          ) : (
+                            <p className="truncate font-medium">
+                              {getMaterialTitle(earning)}
+                            </p>
+                          )}
                           <p className="text-sm text-muted-foreground">
-                            {getBuyerName(earning)} 购买 · {formatDate(earning.createdAt)}
+                            订单 #{earning.orderId} · {getBuyerName(earning)} 购买 · {formatDate(earning.createdAt)}
                           </p>
                         </div>
                       </div>
@@ -191,7 +202,7 @@ export default function EarningsPage() {
                           +{formatCurrency(earning.amount)}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          平台按 10% 抽成后记录
+                          平台服务费 10%，作者获得 90%
                         </p>
                       </div>
                     </div>

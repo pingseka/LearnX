@@ -43,6 +43,7 @@ export const authService = {
         id: user.id,
         email: user.email,
         name: user.name,
+        avatarUrl: user.avatarUrl,
         role: user.role
       },
       token
@@ -103,6 +104,7 @@ export const authService = {
         id: user.id,
         email: user.email,
         name: user.name,
+        avatarUrl: user.avatarUrl,
         role: user.role
       },
       token
@@ -115,5 +117,52 @@ export const authService = {
       throw new Error('用户不存在');
     }
     return user;
+  },
+
+  updateProfile: async (userId: string, data: { name: string }) => {
+    const user = await User.findByPk(Number(userId));
+    if (!user) {
+      throw new Error('用户不存在');
+    }
+
+    const name = data.name.trim();
+    if (!name) {
+      throw new Error('昵称不能为空');
+    }
+
+    await user.update({ name });
+    return user;
+  },
+
+  updateAvatar: async (userId: string, avatarUrl: string) => {
+    const user = await User.findByPk(Number(userId));
+    if (!user) {
+      throw new Error('用户不存在');
+    }
+
+    await user.update({ avatarUrl });
+    return user;
+  },
+
+  changePassword: async (
+    userId: string,
+    data: { currentPassword: string; newPassword: string }
+  ) => {
+    const user = await User.findByPk(Number(userId));
+    if (!user) {
+      throw new Error('用户不存在');
+    }
+
+    const isPasswordValid = await comparePassword(data.currentPassword, user.password);
+    if (!isPasswordValid) {
+      throw new Error('当前密码错误');
+    }
+
+    user.password = await hashPassword(data.newPassword);
+    user.loginAttempts = 0;
+    user.lockoutTime = null;
+    await user.save();
+
+    return { message: '密码修改成功' };
   }
 };

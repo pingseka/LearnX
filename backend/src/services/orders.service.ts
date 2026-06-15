@@ -103,7 +103,7 @@ export const ordersService = {
                   {
                     model: User,
                     as: 'author',
-                    attributes: ['id', 'name', 'email']
+                    attributes: ['id', 'name']
                   }
                 ]
               }
@@ -131,9 +131,9 @@ export const ordersService = {
               attributes: ['id', 'title', 'price', 'fileUrl', 'authorId'],
               include: [
                 {
-                  model: User,
-                  as: 'author',
-                  attributes: ['id', 'name', 'email']
+                    model: User,
+                    as: 'author',
+                    attributes: ['id', 'name']
                 }
               ]
             }
@@ -168,7 +168,7 @@ export const ordersService = {
                 {
                   model: User,
                   as: 'author',
-                  attributes: ['id', 'name', 'email']
+                  attributes: ['id', 'name']
                 }
               ]
             }

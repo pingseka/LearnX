@@ -45,8 +45,8 @@ const pricePresets = ["5.9", "9.9", "19.9", "29.9", "49.9"]
 
 const reviewRules = [
   "平台会先做基础审核，审核通过后资料才会展示。",
-  "沙盒阶段只记录订单和收益流水，不发起真实打款。",
-  "后续接入真实支付前，需要补齐主体资质、结算和税务流程。",
+  "资料售出后会生成订单，并按平台规则记录作者收益。",
+  "当前课程项目暂未接入第三方打款，收益用于演示结算流程。",
 ]
 
 function isValidPrice(value: string) {
@@ -148,9 +148,8 @@ export default function UploadPage() {
 
       setDescription(generated)
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "AI 描述生成失败"
-      setAiError(message)
+      void error
+      setAiError("已使用本地模板生成描述，可继续修改。")
       setDescription(buildLocalDescription(title, selectedCategoryName))
     } finally {
       setIsGenerating(false)
@@ -208,8 +207,8 @@ export default function UploadPage() {
               资料已提交审核
             </h1>
             <p className="mt-3 text-sm leading-6 text-slate-600">
-              审核通过后，用户可以在资料市场中看到这份资料。沙盒阶段会记录收益流水，
-              不会发起真实提现打款。
+              审核通过后，用户可以在资料市场中看到这份资料。资料售出后，
+              系统会生成订单并记录作者收益。
             </p>
             <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:justify-center">
               <Button asChild>
@@ -246,8 +245,8 @@ export default function UploadPage() {
                   发布考研资料
                 </h1>
                 <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-                  按文件、信息、定价和确认四步提交资料。页面会先完成沙盒发布流程，
-                  真实支付和作者提现后续单独接入。
+                  按文件、信息、定价和确认四步提交资料。审核通过后，
+                  其他用户可以购买并下载这份资料。
                 </p>
               </div>
               <Button variant="outline" asChild>
@@ -501,7 +500,7 @@ export default function UploadPage() {
                           设置价格和收益
                         </h2>
                         <p className="mt-2 text-sm text-slate-600">
-                          当前是沙盒结算模型：平台服务费 10%，作者收益 90%。
+                          平台服务费 10%，作者收益 90%。
                         </p>
                       </div>
 
@@ -565,8 +564,8 @@ export default function UploadPage() {
                       <Alert className="border-amber-200 bg-amber-50 text-amber-950">
                         <CircleDollarSign className="h-4 w-4" />
                         <AlertDescription>
-                          例如一份资料定价 19.90 元，沙盒流水会记录平台服务费 1.99 元，
-                          作者收益 17.91 元；真实提现需要后续接支付和结算能力。
+                          例如一份资料定价 19.90 元，平台服务费 1.99 元，
+                          作者收益记录为 17.91 元。
                         </AlertDescription>
                       </Alert>
                     </section>

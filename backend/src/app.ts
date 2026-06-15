@@ -7,6 +7,7 @@ import { connectDB, syncDB } from './config/database';
 import corsMiddleware from './config/cors';
 import { errorMiddleware } from './middleware/error.middleware';
 import authRoutes from './routes/auth.routes';
+import authorsRoutes from './routes/authors.routes';
 import materialsRoutes from './routes/materials.routes';
 import ordersRoutes from './routes/orders.routes';
 import earningsRoutes from './routes/earnings.routes';
@@ -64,6 +65,7 @@ app.use(monitoringRoutes);
 
 // 路由
 app.use('/api/auth', authRoutes);
+app.use('/api/authors', authorsRoutes);
 app.use('/api/materials', materialsRoutes);
 app.use('/api/orders', ordersRoutes);
 app.use('/api/earnings', earningsRoutes);

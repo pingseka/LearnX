@@ -57,7 +57,7 @@ export const materialsService = {
     // 重新获取包含标签的素材
     const materialWithTags = await Material.findByPk(material.id, {
       include: [
-        { model: User, as: 'author', attributes: ['id', 'name', 'email'] },
+        { model: User, as: 'author', attributes: ['id', 'name'] },
         { model: Tag, as: 'tags', attributes: ['id', 'name'] }
       ]
     });
@@ -83,7 +83,7 @@ export const materialsService = {
       where,
       distinct: true,
       include: [
-        { model: User, as: 'author', attributes: ['id', 'name', 'email'] },
+        { model: User, as: 'author', attributes: ['id', 'name'] },
         { model: Tag, as: 'tags', attributes: ['id', 'name'] }
       ],
       limit,
@@ -108,7 +108,7 @@ export const materialsService = {
 
     const material = await Material.findByPk(materialId, {
       include: [
-        { model: User, as: 'author', attributes: ['id', 'name', 'email'] },
+        { model: User, as: 'author', attributes: ['id', 'name'] },
         { model: Tag, as: 'tags', attributes: ['id', 'name'] }
       ]
     });
@@ -146,7 +146,7 @@ export const materialsService = {
       where: { status: 'pending' },
       distinct: true,
       include: [
-        { model: User, as: 'author', attributes: ['id', 'name', 'email'] },
+        { model: User, as: 'author', attributes: ['id', 'name'] },
         { model: Tag, as: 'tags', attributes: ['id', 'name'] }
       ],
       limit,
@@ -178,7 +178,7 @@ export const materialsService = {
 
     return Material.findByPk(material.id, {
       include: [
-        { model: User, as: 'author', attributes: ['id', 'name', 'email'] },
+        { model: User, as: 'author', attributes: ['id', 'name'] },
         { model: Tag, as: 'tags', attributes: ['id', 'name'] }
       ]
     });
@@ -231,7 +231,7 @@ export const materialsService = {
     // 重新获取包含标签的素材
     const updatedMaterial = await Material.findByPk(material.id, {
       include: [
-        { model: User, as: 'author', attributes: ['id', 'name', 'email'] },
+        { model: User, as: 'author', attributes: ['id', 'name'] },
         { model: Tag, as: 'tags', attributes: ['id', 'name'] }
       ]
     });

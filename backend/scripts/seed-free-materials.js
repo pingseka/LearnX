@@ -4,9 +4,12 @@ const sqlite3 = require('sqlite3').verbose();
 const bcrypt = require('bcryptjs');
 
 const backendRoot = path.resolve(__dirname, '..');
-const databasePath = path.join(backendRoot, 'database.sqlite');
+const databasePath = path.resolve(
+  backendRoot,
+  process.env.DB_STORAGE || 'database.sqlite'
+);
 const sampleDir = path.join(backendRoot, 'sample-materials');
-const uploadDir = path.join(backendRoot, 'uploads');
+const uploadDir = path.resolve(backendRoot, process.env.UPLOAD_DIR || 'uploads');
 
 const now = () => {
   const date = new Date();

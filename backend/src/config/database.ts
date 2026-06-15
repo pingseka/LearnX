@@ -38,6 +38,16 @@ export const syncDB = async () => {
       }
     }
 
+    if (tables.includes('users')) {
+      const users = await queryInterface.describeTable('users');
+      if (!users.avatarUrl) {
+        await queryInterface.addColumn('users', 'avatarUrl', {
+          type: DataTypes.STRING,
+          allowNull: true
+        });
+      }
+    }
+
     logger.info('database_synchronized');
   } catch (error) {
     logger.error('database_synchronization_failed', error);

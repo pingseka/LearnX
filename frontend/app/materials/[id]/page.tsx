@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { getAssetUrl } from '@/api';
 import { getMaterialById, type Material } from '@/api/materials';
+import { getOrders } from '@/api/orders';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -68,6 +69,7 @@ export default function MaterialDetailPage() {
   const [error, setError] = useState('');
   const [isPurchaseOpen, setIsPurchaseOpen] = useState(false);
   const [isPurchased, setIsPurchased] = useState(false);
+  const [purchaseStatusError, setPurchaseStatusError] = useState('');
   const [isLiked, setIsLiked] = useState(false);
 
   useEffect(() => {
@@ -105,6 +107,54 @@ export default function MaterialDetailPage() {
     };
   }, [materialId]);
 
+  useEffect(() => {
+    let ignore = false;
+
+    async function loadPurchaseStatus() {
+      if (!materialId || typeof window === 'undefined') {
+        return;
+      }
+
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setIsPurchased(false);
+        setPurchaseStatusError('');
+        return;
+      }
+
+      try {
+        setPurchaseStatusError('');
+        const result = await getOrders({ limit: 100 });
+        if (ignore) {
+          return;
+        }
+
+        const purchased = (result.orders || []).some((order) => {
+          return (
+            order.status === 'completed' &&
+            order.items?.some(
+              (item) => Number(item.materialId) === Number(materialId)
+            )
+          );
+        });
+        setIsPurchased(purchased);
+      } catch (err) {
+        if (!ignore) {
+          setIsPurchased(false);
+          setPurchaseStatusError(
+            err instanceof Error ? err.message : '购买状态加载失败'
+          );
+        }
+      }
+    }
+
+    loadPurchaseStatus();
+
+    return () => {
+      ignore = true;
+    };
+  }, [materialId]);
+
   const fileUrl = useMemo(
     () => getAssetUrl(material?.fileUrl),
     [material?.fileUrl]
@@ -113,7 +163,7 @@ export default function MaterialDetailPage() {
   const canAccessFile = isFree || isPurchased;
 
   const authorName =
-    material?.author?.name || material?.author?.username || material?.author?.email || '资料作者';
+    material?.author?.name || material?.author?.username || '资料作者';
 
   if (loading) {
     return (
@@ -250,9 +300,18 @@ export default function MaterialDetailPage() {
                         </div>
                         <div className="rounded-lg bg-muted/60 p-3">
                           <div className="text-xs">作者</div>
-                          <div className="mt-1 truncate font-medium text-foreground">
-                            {authorName}
-                          </div>
+                          {material.author?.id ? (
+                            <Link
+                              href={`/authors/${material.author.id}`}
+                              className="mt-1 block truncate font-medium text-foreground hover:text-primary"
+                            >
+                              {authorName}
+                            </Link>
+                          ) : (
+                            <div className="mt-1 truncate font-medium text-foreground">
+                              {authorName}
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -309,7 +368,7 @@ export default function MaterialDetailPage() {
                           <FileText className="mb-4 h-14 w-14 text-muted-foreground" />
                           <h3 className="text-lg font-semibold">购买后可查看完整文件</h3>
                           <p className="mt-2 max-w-md text-sm text-muted-foreground">
-                            当前资料为付费资料。完成沙盒购买后，页面会开放 PDF 预览和原文件下载。
+                            当前资料为付费资料。完成支付后，页面会开放 PDF 预览和原文件下载。
                           </p>
                           <Button
                             className="mt-5"
@@ -411,6 +470,11 @@ export default function MaterialDetailPage() {
                     </div>
                   ) : (
                     <div className="space-y-3">
+                      {purchaseStatusError && (
+                        <div className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-700">
+                          购买状态加载失败：{purchaseStatusError}
+                        </div>
+                      )}
                       <Button
                         className="w-full"
                         size="lg"
@@ -455,10 +519,19 @@ export default function MaterialDetailPage() {
                       </AvatarFallback>
                     </Avatar>
                     <div className="min-w-0">
-                      <p className="truncate font-medium">{authorName}</p>
+                      {material.author?.id ? (
+                        <Link
+                          href={`/authors/${material.author.id}`}
+                          className="block truncate font-medium hover:text-primary"
+                        >
+                          {authorName}
+                        </Link>
+                      ) : (
+                        <p className="truncate font-medium">{authorName}</p>
+                      )}
                       <p className="flex items-center gap-1 text-sm text-muted-foreground">
                         <User className="h-3.5 w-3.5" />
-                        LearnX 创作者
+                        LearnX 创作者主页
                       </p>
                     </div>
                   </div>

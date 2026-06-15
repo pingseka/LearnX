@@ -100,6 +100,16 @@ echo "你的 GitHub PAT" | docker login ghcr.io -u 你的GitHub用户名 --passw
 sh deploy/update.sh
 ```
 
+如需给验收环境导入完整演示数据，先确认后端容器已经启动并完成表结构同步，再执行：
+
+```bash
+docker compose --env-file .env -f compose.prod.yaml exec backend npm run seed:demo
+```
+
+脚本会写入 Docker volume 中的 SQLite 数据库，并把样例资料复制到
+`uploads` volume。也就是说，服务器上的用户上传文件不在 Git 仓库里，
+而在 Docker volume 对应的 `/app/uploads` 中，更新镜像不会丢失。
+
 ## 4. 宿主机已有 Nginx
 
 如果腾讯云服务器已经使用宿主机 Nginx 承载其他域名，不要启动

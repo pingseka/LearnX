@@ -54,7 +54,10 @@ export async function fetchApi<T>(
   } catch (err: any) {
     clearTimeout(timeoutId);
     if (err.name === 'AbortError') {
-      throw new Error('Request timeout');
+      throw new Error('请求超时，请确认后端服务正常运行');
+    }
+    if (err instanceof TypeError && /fetch/i.test(err.message)) {
+      throw new Error('无法连接后端服务，请确认后台已启动后刷新页面');
     }
     throw err;
   }
@@ -100,7 +103,10 @@ export async function uploadFile<T>(
   } catch (err: any) {
     clearTimeout(timeoutId);
     if (err.name === 'AbortError') {
-      throw new Error('Upload timeout');
+      throw new Error('上传超时，请确认后端服务正常运行');
+    }
+    if (err instanceof TypeError && /fetch/i.test(err.message)) {
+      throw new Error('无法连接后端服务，请确认后台已启动后刷新页面');
     }
     throw err;
   }

@@ -11,7 +11,7 @@ import {
   Trash2,
   XCircle,
 } from "lucide-react"
-import { getMyMaterials, type Material } from "@/api/materials"
+import { deleteMaterial, getMyMaterials, type Material } from "@/api/materials"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -69,6 +69,7 @@ export default function MyMaterialsPage() {
   const [materials, setMaterials] = useState<Material[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
+  const [deletingId, setDeletingId] = useState<number | null>(null)
 
   useEffect(() => {
     async function fetchData() {
@@ -85,6 +86,28 @@ export default function MyMaterialsPage() {
 
     fetchData()
   }, [])
+
+  async function handleDelete(material: Material) {
+    const confirmed = window.confirm(
+      `确定删除《${material.title}》吗？删除后资料市场将不再展示这份资料。`
+    )
+    if (!confirmed) {
+      return
+    }
+
+    try {
+      setDeletingId(material.id)
+      await deleteMaterial(material.id)
+      setMaterials((current) =>
+        current.filter((item) => item.id !== material.id)
+      )
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "删除失败"
+      setError(message)
+    } finally {
+      setDeletingId(null)
+    }
+  }
 
   const summary = useMemo(() => {
     return materials.reduce(
@@ -212,14 +235,21 @@ export default function MyMaterialsPage() {
                                 查看详情
                               </Link>
                             </DropdownMenuItem>
-                            <DropdownMenuItem className="flex items-center gap-2">
+                            <DropdownMenuItem
+                              className="flex items-center gap-2"
+                              disabled
+                            >
                               <Pencil className="h-4 w-4" />
-                              编辑资料
+                              编辑资料（暂未开放）
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem className="flex items-center gap-2 text-destructive focus:text-destructive">
+                            <DropdownMenuItem
+                              className="flex items-center gap-2 text-destructive focus:text-destructive"
+                              disabled={deletingId === material.id}
+                              onClick={() => handleDelete(material)}
+                            >
                               <Trash2 className="h-4 w-4" />
-                              删除资料
+                              {deletingId === material.id ? "删除中..." : "删除资料"}
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
