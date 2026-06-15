@@ -103,7 +103,7 @@ function MaterialsContent() {
     }
 
     return filtered
-  }, [searchQuery, selectedCategory, onlyFree, sortBy, priceRange])
+  }, [materials, searchQuery, selectedCategory, onlyFree, sortBy, priceRange])
 
   const FilterContent = () => (
     <div className="space-y-6">

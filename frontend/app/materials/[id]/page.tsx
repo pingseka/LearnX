@@ -18,6 +18,7 @@ import {
 import { getAssetUrl } from '@/api';
 import { getMaterialById, type Material } from '@/api/materials';
 import { getOrders } from '@/api/orders';
+import { useAuth } from '@/lib/auth-context';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -63,6 +64,7 @@ function isPdf(fileUrl: string) {
 
 export default function MaterialDetailPage() {
   const params = useParams();
+  const { user } = useAuth();
   const materialId = Array.isArray(params.id) ? params.id[0] : params.id;
   const [material, setMaterial] = useState<Material | null>(null);
   const [loading, setLoading] = useState(true);
@@ -160,7 +162,8 @@ export default function MaterialDetailPage() {
     [material?.fileUrl]
   );
   const isFree = Number(material?.price || 0) === 0;
-  const canAccessFile = isFree || isPurchased;
+  const isOwner = Boolean(user?.id && material?.authorId === user.id);
+  const canAccessFile = isFree || isPurchased || isOwner;
 
   const authorName =
     material?.author?.name || material?.author?.username || '资料作者';
@@ -420,94 +423,95 @@ export default function MaterialDetailPage() {
               </Tabs>
             </div>
 
-            <aside className="space-y-6">
-              <Card className="sticky top-24 border">
-                <CardContent className="space-y-6 p-6">
-                  <div>
-                    <div className="text-sm text-muted-foreground">资料价格</div>
-                    <div className="mt-1 text-3xl font-bold text-primary">
-                      {formatPrice(material.price)}
-                    </div>
-                  </div>
-
-                  {isFree ? (
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2 rounded-lg bg-green-50 px-3 py-2 text-green-700">
-                        <CheckCircle2 className="h-5 w-5" />
-                        免费资料，可直接查看和下载
+            <aside>
+              <div className="space-y-6 lg:sticky lg:top-24">
+                <Card className="border">
+                  <CardContent className="space-y-6 p-6">
+                    <div>
+                      <div className="text-sm text-muted-foreground">资料价格</div>
+                      <div className="mt-1 text-3xl font-bold text-primary">
+                        {formatPrice(material.price)}
                       </div>
-                      {fileUrl && (
-                        <div className="grid gap-2">
+                    </div>
+
+                    {isFree ? (
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2 rounded-lg bg-green-50 px-3 py-2 text-green-700">
+                          <CheckCircle2 className="h-5 w-5" />
+                          免费资料，可直接查看和下载
+                        </div>
+                        {fileUrl && (
+                          <div className="grid gap-2">
+                            <Button className="w-full" asChild>
+                              <a href={fileUrl} target="_blank" rel="noreferrer">
+                                <Eye className="mr-2 h-4 w-4" />
+                                立即查看
+                              </a>
+                            </Button>
+                            <Button variant="outline" className="w-full" asChild>
+                              <a href={fileUrl} download>
+                                <Download className="mr-2 h-4 w-4" />
+                                免费下载
+                              </a>
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    ) : isPurchased || isOwner ? (
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2 rounded-lg bg-green-50 px-3 py-2 text-green-700">
+                          <CheckCircle2 className="h-5 w-5" />
+                          {isOwner ? '你是作者，可直接查看完整资料' : '已购买，可查看完整资料'}
+                        </div>
+                        {fileUrl && (
                           <Button className="w-full" asChild>
-                            <a href={fileUrl} target="_blank" rel="noreferrer">
-                              <Eye className="mr-2 h-4 w-4" />
-                              立即查看
-                            </a>
-                          </Button>
-                          <Button variant="outline" className="w-full" asChild>
                             <a href={fileUrl} download>
                               <Download className="mr-2 h-4 w-4" />
-                              免费下载
+                              下载资料
                             </a>
                           </Button>
-                        </div>
-                      )}
-                    </div>
-                  ) : isPurchased ? (
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2 rounded-lg bg-green-50 px-3 py-2 text-green-700">
-                        <CheckCircle2 className="h-5 w-5" />
-                        已购买，可查看完整资料
+                        )}
                       </div>
-                      {fileUrl && (
-                        <Button className="w-full" asChild>
-                          <a href={fileUrl} download>
-                            <Download className="mr-2 h-4 w-4" />
-                            下载资料
-                          </a>
+                    ) : (
+                      <div className="space-y-3">
+                        {purchaseStatusError && (
+                          <div className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-700">
+                            购买状态加载失败：{purchaseStatusError}
+                          </div>
+                        )}
+                        <Button
+                          className="w-full"
+                          size="lg"
+                          onClick={() => setIsPurchaseOpen(true)}
+                        >
+                          <ShoppingCart className="mr-2 h-4 w-4" />
+                          立即购买
                         </Button>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {purchaseStatusError && (
-                        <div className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-700">
-                          购买状态加载失败：{purchaseStatusError}
-                        </div>
-                      )}
-                      <Button
-                        className="w-full"
-                        size="lg"
-                        onClick={() => setIsPurchaseOpen(true)}
-                      >
-                        <ShoppingCart className="mr-2 h-4 w-4" />
-                        立即购买
-                      </Button>
-                      <Button variant="outline" className="w-full" size="lg">
-                        <Share2 className="mr-2 h-4 w-4" />
-                        分享资料
-                      </Button>
-                    </div>
-                  )}
+                        <Button variant="outline" className="w-full" size="lg">
+                          <Share2 className="mr-2 h-4 w-4" />
+                          分享资料
+                        </Button>
+                      </div>
+                    )}
 
-                  <Separator />
+                    <Separator />
 
-                  <div className="space-y-3 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-green-500" />
-                      {isFree ? '免费资料可直接下载原文件' : '购买后可下载原文件'}
+                    <div className="space-y-3 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                        {isFree ? '免费资料可直接下载原文件' : '购买后可下载原文件'}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                        平台审核通过后公开展示
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                        支持 PDF 在线预览
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-green-500" />
-                      平台审核通过后公开展示
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-green-500" />
-                      支持 PDF 在线预览
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
 
               <Card className="border">
                 <CardContent className="p-6">
@@ -537,6 +541,7 @@ export default function MaterialDetailPage() {
                   </div>
                 </CardContent>
               </Card>
+              </div>
             </aside>
           </div>
         </div>

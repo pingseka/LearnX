@@ -7,8 +7,6 @@ dist
 .gitignore
 __tests__
 coverage
-sample-materials
-scripts
 .eslintrc.cjs
 jest.config.js
 test-password.js

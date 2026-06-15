@@ -17,10 +17,11 @@ RUN addgroup -g 101 -S appgroup && adduser -u 100 -S appuser -G appgroup
 COPY --chown=appuser:appgroup --from=builder /app/dist ./dist
 COPY --chown=appuser:appgroup --from=builder /app/node_modules ./node_modules
 COPY --chown=appuser:appgroup --from=builder /app/package.json ./package.json
+COPY --chown=appuser:appgroup --from=builder /app/scripts ./scripts
+COPY --chown=appuser:appgroup --from=builder /app/sample-materials ./sample-materials
 
 RUN mkdir -p /app/data /app/uploads \
-    && chown appuser:appgroup /app/data /app/uploads \
-    && npm uninstall -g npm
+    && chown appuser:appgroup /app/data /app/uploads
 
 USER appuser
 
