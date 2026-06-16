@@ -12,6 +12,8 @@ FROM node:20-alpine
 
 WORKDIR /app
 
+RUN apk upgrade --no-cache libcrypto3 libssl3
+
 RUN addgroup -g 101 -S appgroup && adduser -u 100 -S appuser -G appgroup
 
 COPY --chown=appuser:appgroup --from=builder /app/dist ./dist

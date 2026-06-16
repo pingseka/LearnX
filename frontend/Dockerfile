@@ -17,6 +17,8 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
+RUN apk upgrade --no-cache libcrypto3 libssl3
+
 RUN addgroup -g 101 -S appgroup && adduser -u 100 -S appuser -G appgroup
 
 COPY --chown=appuser:appgroup --from=builder /app/node_modules ./node_modules
