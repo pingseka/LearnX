@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useState } from "react"
+import { type FormEvent, useState } from "react"
 import { Search, Menu, X, User, LogOut, Settings, Package, FileText, TrendingUp } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -18,7 +18,19 @@ import { useAuth } from "@/lib/auth-context"
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
   const { user, isAuthenticated, logout } = useAuth()
+
+  const submitSearch = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const query = searchQuery.trim()
+    const target = query
+      ? `/materials?search=${encodeURIComponent(query)}`
+      : "/materials"
+
+    setIsMenuOpen(false)
+    window.location.href = target
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full border-b-2 border-border bg-background">
@@ -42,16 +54,18 @@ export function Header() {
         </nav>
 
         {/* Search Bar */}
-        <div className="hidden md:flex items-center gap-2 flex-1 max-w-md mx-6">
+        <form onSubmit={submitSearch} className="hidden md:flex items-center gap-2 flex-1 max-w-md mx-6">
           <div className="relative w-full">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               type="search"
               placeholder="搜索考研资料..."
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
               className="pl-10 bg-muted border-0 focus-visible:bg-white focus-visible:border-2 focus-visible:border-primary rounded-lg"
             />
           </div>
-        </div>
+        </form>
 
         {/* Right Section */}
         <div className="flex items-center gap-3">
@@ -147,14 +161,16 @@ export function Header() {
       {isMenuOpen && (
         <div className="md:hidden border-t-2 border-border bg-background">
           <div className="container mx-auto px-4 py-4 space-y-4">
-            <div className="relative">
+            <form onSubmit={submitSearch} className="relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 type="search"
                 placeholder="搜索考研资料..."
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
                 className="pl-10 bg-muted border-0 rounded-lg"
               />
-            </div>
+            </form>
             <nav className="flex flex-col gap-2">
               <Link href="/materials" className="px-4 py-2 rounded-lg hover:bg-muted transition-colors" onClick={() => setIsMenuOpen(false)}>
                 资料市场

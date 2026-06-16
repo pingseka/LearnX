@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { type FormEvent, useEffect, useMemo, useState } from "react"
 import Link from "next/link"
 import { Search, Upload, Shield, Award, ArrowRight, TrendingUp, MessageCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -14,15 +14,34 @@ import { categories } from "@/lib/catalog"
 
 export default function HomePage() {
   const [materials, setMaterials] = useState<Material[]>([])
+  const [statsMaterials, setStatsMaterials] = useState<Material[]>([])
+  const [totalMaterials, setTotalMaterials] = useState(0)
+  const [heroSearchQuery, setHeroSearchQuery] = useState("")
   const [loading, setLoading] = useState(true)
+
+  const submitHeroSearch = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const query = heroSearchQuery.trim()
+    window.location.href = query
+      ? `/materials?search=${encodeURIComponent(query)}`
+      : "/materials"
+  }
 
   useEffect(() => {
     async function fetchMaterials() {
       try {
-        const result = await getMaterials({ limit: 8 })
-        setMaterials(result.materials || [])
+        const [featuredResult, statsResult] = await Promise.all([
+          getMaterials({ limit: 8 }),
+          getMaterials({ limit: 1000 }),
+        ])
+
+        setMaterials(featuredResult.materials || [])
+        setStatsMaterials(statsResult.materials || [])
+        setTotalMaterials(statsResult.total || statsResult.materials?.length || 0)
       } catch {
         setMaterials([])
+        setStatsMaterials([])
+        setTotalMaterials(0)
       } finally {
         setLoading(false)
       }
@@ -34,9 +53,9 @@ export default function HomePage() {
   const categoryCards = useMemo(() => {
     return categories.map((category) => ({
       ...category,
-      count: materials.filter((material) => material.category === category.id).length,
+      count: statsMaterials.filter((material) => material.category === category.id).length,
     }))
-  }, [materials])
+  }, [statsMaterials])
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -72,25 +91,27 @@ export default function HomePage() {
 
               {/* Search Bar */}
               <div className="max-w-xl mx-auto px-2 sm:px-0">
-                <div className="flex flex-col sm:flex-row gap-2 p-2 bg-white rounded-lg">
+                <form onSubmit={submitHeroSearch} className="flex flex-col sm:flex-row gap-2 p-2 bg-white rounded-lg">
                   <div className="relative flex-1">
                     <Search className="absolute left-3 sm:left-4 top-1/2 h-4 sm:h-5 w-4 sm:w-5 -translate-y-1/2 text-muted-foreground" />
                     <Input
                       type="search"
                       placeholder="搜索你需要的考研资料..."
+                      value={heroSearchQuery}
+                      onChange={(event) => setHeroSearchQuery(event.target.value)}
                       className="pl-10 sm:pl-12 h-10 sm:h-12 border-0 text-sm sm:text-base focus-visible:ring-0"
                     />
                   </div>
-                  <Button size="lg" className="h-10 sm:h-12 px-6 sm:px-8 rounded-md bg-foreground text-background hover:bg-gray-800 text-sm sm:text-base w-full sm:w-auto transition-all duration-200 hover:scale-105">
+                  <Button type="submit" size="lg" className="h-10 sm:h-12 px-6 sm:px-8 rounded-md bg-foreground text-background hover:bg-gray-800 text-sm sm:text-base w-full sm:w-auto transition-all duration-200 hover:scale-105">
                     搜索
                   </Button>
-                </div>
+                </form>
               </div>
 
               {/* Quick Stats */}
               <div className="grid grid-cols-3 gap-4 sm:flex sm:flex-wrap sm:justify-center sm:gap-8 md:gap-16 pt-4 sm:pt-8">
                 <div className="text-center">
-                  <div className="text-xl sm:text-3xl md:text-4xl font-extrabold text-white">{materials.length}</div>
+                  <div className="text-xl sm:text-3xl md:text-4xl font-extrabold text-white">{totalMaterials}</div>
                   <div className="text-xs sm:text-sm text-white/70">已上架资料</div>
                 </div>
                 <div className="text-center">

@@ -32,8 +32,9 @@ import { categories, type Category } from "@/lib/catalog"
 function MaterialsContent() {
   const searchParams = useSearchParams()
   const initialCategory = searchParams.get("category") as Category | null
+  const initialSearchQuery = searchParams.get("search") || ""
 
-  const [searchQuery, setSearchQuery] = useState("")
+  const [searchQuery, setSearchQuery] = useState(initialSearchQuery)
   const [selectedCategory, setSelectedCategory] = useState<Category | "all">(initialCategory || "all")
   const [onlyFree, setOnlyFree] = useState(false)
   const [sortBy, setSortBy] = useState<"popular" | "newest" | "price-low" | "price-high">('popular')
@@ -43,9 +44,14 @@ function MaterialsContent() {
   const [loadError, setLoadError] = useState("")
 
   useEffect(() => {
+    setSearchQuery(searchParams.get("search") || "")
+    setSelectedCategory((searchParams.get("category") as Category | null) || "all")
+  }, [searchParams])
+
+  useEffect(() => {
     async function fetchData() {
       try {
-        const result = await getMaterials()
+        const result = await getMaterials({ limit: 1000 })
         setMaterials(result?.materials || [])
         setLoadError("")
       } catch (err) {
