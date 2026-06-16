@@ -20,6 +20,8 @@ COPY --chown=appuser:appgroup --from=builder /app/package.json ./package.json
 COPY --chown=appuser:appgroup --from=builder /app/scripts ./scripts
 COPY --chown=appuser:appgroup --from=builder /app/sample-materials ./sample-materials
 
+RUN npm uninstall -g npm
+
 RUN mkdir -p /app/data /app/uploads \
     && chown appuser:appgroup /app/data /app/uploads
 
