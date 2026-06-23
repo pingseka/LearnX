@@ -24,6 +24,12 @@
 ## 在线演示
 
 - 演示地址：[https://learnx.promptrule.com/](https://learnx.promptrule.com/)
+
+
+
+
+https://github.com/user-attachments/assets/86c47648-4a93-43b4-b0c1-2238eb8f5cfc
+
 <img width="2555" height="1480" alt="28a1a4649d1ea8cf01fb93cf6cbc2455" src="https://github.com/user-attachments/assets/0c365ef1-cf46-40ae-95f7-0f4fb7c90479" />
 
 
